@@ -20,6 +20,8 @@ include_directories (
 
 add_executable (photogram
 	main.cpp
+	Mapper.cpp
+	KeyFrame.cpp
 )
 
 target_link_libraries (
