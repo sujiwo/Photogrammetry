@@ -40,10 +40,19 @@ KeyFrame::~KeyFrame() {
 }
 
 
-void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2, cv::Ptr<cv::DescriptorMatcher> matcher)
+void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
+	cv::Ptr<cv::DescriptorMatcher> matcher,
+	vector<FeaturePair> &featurePairs
+)
 {
 	vector<cv::DMatch> k12matches;
 	matcher->match(k1.descriptors, k2.descriptors, k12matches);
 
-	theia::TwoViewInfo tw;
+	for (auto &m: k12matches) {
+		if (m.trainIdx < k1.keypoints.size() and m.queryIdx < k2.keypoints.size()) {
+			theia::Feature fk1 = keypoint2feature(k1.keypoints[m.queryIdx]);
+			theia::Feature fk2 = keypoint2feature(k2.keypoints[m.trainIdx]);
+			featurePairs.push_back (make_tuple(k1.tview, fk1, k2.tview, fk2));
+		}
+	}
 }

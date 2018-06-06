@@ -93,6 +93,28 @@ void Mapper::buildKeyFrames ()
 	}
 
 	// Build matches
-	KeyFrame *anchor = &(frameList[0]);
+	theia::TrackBuilder trackBuilder (1, dataset.size());
+//	KeyFrame *anchor = frameList[0];
+
+	for (int i=1; i<dataset.size(); i++) {
+		KeyFrame *kf1 = frameList[i-1],
+			*kf2 = frameList[i];
+
+		vector<FeaturePair> featPairs;
+		featPairs.clear();
+
+		KeyFrame::match(*kf1, *kf2, bfMatch, featPairs);
+		for (auto &fp: featPairs) {
+			trackBuilder.AddFeatureCorrespondence(get<0>(fp), get<1>(fp), get<2>(fp), get<3>(fp));
+		}
+	}
+
+	trackBuilder.BuildTracks(&constructor);
 }
 
+
+bool Mapper::run ()
+{
+	buildKeyFrames();
+	return true;
+}

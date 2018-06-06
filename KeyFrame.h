@@ -14,6 +14,14 @@
 #include <vector>
 #include <Eigen/Eigen>
 #include <string>
+#include <tuple>
+
+
+typedef std::tuple<theia::ViewId, theia::Feature, theia::ViewId, theia::Feature> FeaturePair;
+
+
+inline theia::Feature keypoint2feature (const cv::KeyPoint &k)
+{ return theia::Feature(k.pt.x, k.pt.y); }
 
 
 class KeyFrame {
@@ -33,7 +41,9 @@ public:
 	{ return descriptors; }
 
 	static void match (const KeyFrame &k1, const KeyFrame &k2,
-		cv::Ptr<cv::DescriptorMatcher> matcher);
+		cv::Ptr<cv::DescriptorMatcher> matcher,
+		std::vector<FeaturePair> &featurePairs
+	);
 
 private:
 	cv::Mat image;

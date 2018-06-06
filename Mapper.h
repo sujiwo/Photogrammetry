@@ -41,6 +41,8 @@ public:
 	Mapper(const std::string &datasetDir);
 	virtual ~Mapper();
 
+	bool run ();
+
 private:
 	std::vector<DataItem> dataset;
 	CameraPinholeParamsRead cparams;
