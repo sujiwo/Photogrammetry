@@ -15,8 +15,11 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d.hpp>
 
+#include "KeyFrame.h"
+
 
 using namespace Eigen;
+using std::vector;
 
 
 struct DataItem {
@@ -44,9 +47,14 @@ private:
 	theia::Reconstruction constructor;
 
 	cv::Mat mask;
+
+//	Feature detector, descriptor and matcher
 	cv::Ptr<cv::ORB> featureDetector;
+	cv::Ptr<cv::BFMatcher> bfMatch;
 
 	theia::Camera camera0;
+
+	vector<KeyFrame*> frameList;
 
 	void buildKeyFrames();
 

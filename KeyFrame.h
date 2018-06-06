@@ -19,15 +19,25 @@
 class KeyFrame {
 public:
 	KeyFrame(const std::string &path,
-			Eigen::Vector3d p, Eigen::Quaterniond o,
-			const cv::Mat &mask,
-			const cv::FeatureDetector &fdetector,
+			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
+			cv::Mat &mask,
+			cv::Ptr<cv::FeatureDetector> fdetector,
+			theia::Camera &camera0,
 			theia::Reconstruction *reconstructor);
 	virtual ~KeyFrame();
 
+	inline std::vector<cv::KeyPoint> getKeypoints()
+	{ return keypoints; }
+
+	inline cv::Mat getDescriptors()
+	{ return descriptors; }
+
+	static void match (const KeyFrame &k1, const KeyFrame &k2,
+		cv::Ptr<cv::DescriptorMatcher> matcher);
+
 private:
 	cv::Mat image;
-	cv::Mat keypoints;
+	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
 
 	Eigen::Vector3d position;

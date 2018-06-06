@@ -62,6 +62,7 @@ Mapper::Mapper(const string &datasetDir) :
 
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
 	featureDetector = cv::ORB::create(6000);
+	bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
 
 	// Initialize camera
 	theia::CameraIntrinsicsPrior camera0intrinsics;
@@ -73,6 +74,7 @@ Mapper::Mapper(const string &datasetDir) :
 	inputfd.close();
 }
 
+
 Mapper::~Mapper() {
 	// TODO Auto-generated destructor stub
 }
@@ -81,14 +83,16 @@ Mapper::~Mapper() {
 void Mapper::buildKeyFrames ()
 {
 	for (auto &dataItem: dataset) {
-		theia::ViewId i = constructor.AddView(dataItem.imagePath, 0);
-		theia::View *cview = constructor.MutableView(i);
-		*(cview->MutableCameraIntrinsicsPrior()) = camera0.CameraIntrinsicsPriorFromIntrinsics();
-		cview->MutableCamera()->SetPosition(dataItem.position);
-		Eigen::Matrix3d rot = dataItem.orientation.matrix();
-		cview->MutableCamera()->SetOrientationFromRotationMatrix(rot);
-
-
+		KeyFrame *newkf = new KeyFrame(dataItem.imagePath,
+			dataItem.position, dataItem.orientation,
+			mask,
+			featureDetector,
+			camera0,
+			&constructor);
+		frameList.push_back(newkf);
 	}
+
+	// Build matches
+	KeyFrame *anchor = &(frameList[0]);
 }
 
