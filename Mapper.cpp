@@ -93,7 +93,7 @@ void Mapper::buildKeyFrames ()
 	}
 
 	// Build matches
-	theia::TrackBuilder trackBuilder (1, dataset.size());
+	theia::TrackBuilder trackBuilder (2, dataset.size()*2);
 //	KeyFrame *anchor = frameList[0];
 
 	for (int i=1; i<dataset.size(); i++) {
