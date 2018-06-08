@@ -26,8 +26,7 @@ KeyFrame::KeyFrame(const string &path,
 		throw runtime_error("Unable to open image file");
 
 	tview = reconstructor->AddView(path, 0);
-
-	theia::View *cview = reconstructor->MutableView(0);
+	theia::View *cview = reconstructor->MutableView(tview);
 	cview->MutableCamera()->SetFromCameraIntrinsicsPriors(camera0.CameraIntrinsicsPriorFromIntrinsics());
 	cview->MutableCamera()->SetPosition(position);
 	cview->MutableCamera()->SetOrientationFromRotationMatrix(orientation.toRotationMatrix());
