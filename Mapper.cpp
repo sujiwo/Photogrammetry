@@ -122,5 +122,11 @@ bool Mapper::run ()
 {
 	buildKeyFrames();
 
+	// XXX: Does this code run ?
+	theia::ReconstructionEstimatorOptions sfmOpts;
+	sfmOpts.reconstruction_estimator_type = theia::ReconstructionEstimatorType::INCREMENTAL;
+	theia::ReconstructionEstimator *sfmEstimator = theia::ReconstructionEstimator::Create(sfmOpts);
+	sfmEstimator->Estimate(viewgraph, constructor);
+
 	return true;
 }
