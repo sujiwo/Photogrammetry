@@ -16,7 +16,7 @@ KeyFrame::KeyFrame(const string &path,
 		cv::Mat &mask,
 		cv::Ptr<cv::FeatureDetector> fdetector,
 		theia::Camera &camera0,
-		theia::Reconstruction *reconstructor):
+		theia::Reconstruction* reconstructor):
 	orientation(o),
 	position(p),
 	prev(NULL)
@@ -32,9 +32,11 @@ KeyFrame::KeyFrame(const string &path,
 	cview->MutableCamera()->SetOrientationFromRotationMatrix(orientation.toRotationMatrix());
 
 	fdetector->detectAndCompute(image, mask, keypoints, descriptors, false);
+	camera = cview->MutableCamera();
 }
 
-KeyFrame::~KeyFrame() {
+KeyFrame::~KeyFrame()
+{
 	// TODO Auto-generated destructor stub
 }
 

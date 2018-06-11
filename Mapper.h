@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <Eigen/Eigen>
 #include <theia/theia.h>
 #include <opencv2/opencv.hpp>
@@ -46,7 +47,11 @@ public:
 private:
 	std::vector<DataItem> dataset;
 	CameraPinholeParamsRead cparams;
-	theia::Reconstruction constructor;
+
+	// SfM Object
+	theia::Reconstruction *constructor;
+	theia::ViewGraph *viewgraph;
+	theia::TrackBuilder *trackbuilder;
 
 	cv::Mat mask;
 

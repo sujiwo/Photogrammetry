@@ -19,7 +19,9 @@ using namespace std;
 
 Mapper::Mapper(const string &datasetDir) :
 
-	camera0(theia::CameraIntrinsicsModelType::PINHOLE)
+	camera0(theia::CameraIntrinsicsModelType::PINHOLE),
+	constructor(new theia::Reconstruction),
+	viewgraph(new theia::ViewGraph)
 
 {
 	string groundTruthList = datasetDir + "/pose.txt";
@@ -72,6 +74,7 @@ Mapper::Mapper(const string &datasetDir) :
 	camera0.SetImageSize(cparams.width, cparams.height);
 
 	inputfd.close();
+	trackbuilder = new theia::TrackBuilder(2, dataset.size()*2);
 }
 
 
@@ -88,12 +91,11 @@ void Mapper::buildKeyFrames ()
 			mask,
 			featureDetector,
 			camera0,
-			&constructor);
+			constructor);
 		frameList.push_back(newkf);
 	}
 
 	// Build matches
-	theia::TrackBuilder trackBuilder (2, dataset.size()*2);
 //	KeyFrame *anchor = frameList[0];
 
 	for (int i=1; i<dataset.size(); i++) {
@@ -105,16 +107,20 @@ void Mapper::buildKeyFrames ()
 
 		KeyFrame::match(*kf1, *kf2, bfMatch, featPairs);
 		for (auto &fp: featPairs) {
-			trackBuilder.AddFeatureCorrespondence(get<0>(fp), get<1>(fp), get<2>(fp), get<3>(fp));
+			trackbuilder->AddFeatureCorrespondence(get<0>(fp), get<1>(fp), get<2>(fp), get<3>(fp));
 		}
+		theia::TwoViewInfo tw12;
+		theia::TwoViewInfoFromTwoCameras(*(kf1->getCamera()), *(kf2->getCamera()), &tw12);
+		viewgraph->AddEdge (kf1->getViewId(), kf2->getViewId(), tw12);
 	}
 
-	trackBuilder.BuildTracks(&constructor);
+	trackbuilder->BuildTracks (constructor);
 }
 
 
 bool Mapper::run ()
 {
 	buildKeyFrames();
+
 	return true;
 }

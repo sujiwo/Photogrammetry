@@ -14,6 +14,7 @@
 #include <vector>
 #include <Eigen/Eigen>
 #include <string>
+#include <memory>
 #include <tuple>
 
 
@@ -31,7 +32,7 @@ public:
 			cv::Mat &mask,
 			cv::Ptr<cv::FeatureDetector> fdetector,
 			theia::Camera &camera0,
-			theia::Reconstruction *reconstructor);
+			theia::Reconstruction* reconstructor);
 	virtual ~KeyFrame();
 
 	inline std::vector<cv::KeyPoint> getKeypoints()
@@ -45,6 +46,12 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
+	theia::Camera* getCamera()
+	{ return camera; }
+
+	const theia::ViewId& getViewId ()
+	{ return tview; }
+
 private:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
@@ -54,6 +61,7 @@ private:
 	Eigen::Quaterniond orientation;
 
 	theia::ViewId tview;
+	theia::Camera *camera;
 
 	KeyFrame* prev;
 };
