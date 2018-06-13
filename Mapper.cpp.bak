@@ -15,10 +15,14 @@
 
 
 using namespace std;
-using namespace Eigen;
 
 
-Mapper::Mapper(const string &datasetDir)
+Mapper::Mapper(const string &datasetDir) :
+
+	camera0(theia::CameraIntrinsicsModelType::PINHOLE),
+	constructor(new theia::Reconstruction),
+	viewgraph(new theia::ViewGraph)
+
 {
 	string groundTruthList = datasetDir + "/pose.txt";
 	ifstream inputfd (groundTruthList.c_str());
@@ -62,7 +66,15 @@ Mapper::Mapper(const string &datasetDir)
 	featureDetector = cv::ORB::create(6000);
 	bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
 
+	// Initialize camera
+	theia::CameraIntrinsicsPrior camera0intrinsics;
+	camera0.SetFocalLength(cparams.fx);
+	camera0.SetImageSize(cparams.width, cparams.height);
+	camera0.SetPrincipalPoint(cparams.cx, cparams.cy);
+	camera0.SetImageSize(cparams.width, cparams.height);
+
 	inputfd.close();
+	trackbuilder = new theia::TrackBuilder(2, dataset.size()*2);
 }
 
 
@@ -77,39 +89,48 @@ void Mapper::buildKeyFrames ()
 		KeyFrame *newkf = new KeyFrame(dataItem.imagePath,
 			dataItem.position, dataItem.orientation,
 			mask,
-			featureDetector);
+			featureDetector,
+			camera0,
+			constructor);
 		frameList.push_back(newkf);
 	}
 
 	// Build matches
 //	KeyFrame *anchor = frameList[0];
 
-//	for (int i=1; i<dataset.size(); i++) {
-//		KeyFrame *kf1 = frameList[i-1],
-//			*kf2 = frameList[i];
-//
-//		vector<FeaturePair> featPairs;
-//		featPairs.clear();
-//
-//		KeyFrame::match(*kf1, *kf2, bfMatch, featPairs);
-//	}
+	for (int i=1; i<dataset.size(); i++) {
+		KeyFrame *kf1 = frameList[i-1],
+			*kf2 = frameList[i];
+
+		vector<FeaturePair> featPairs;
+		featPairs.clear();
+
+		KeyFrame::match(*kf1, *kf2, bfMatch, featPairs);
+		for (auto &fp: featPairs) {
+			trackbuilder->AddFeatureCorrespondence(get<0>(fp), get<1>(fp), get<2>(fp), get<3>(fp));
+		}
+		theia::TwoViewInfo tw12;
+		theia::TwoViewInfoFromTwoCameras(*(kf1->getCamera()), *(kf2->getCamera()), &tw12);
+		viewgraph->AddEdge (kf1->getViewId(), kf2->getViewId(), tw12);
+	}
+
+	trackbuilder->BuildTracks (constructor);
 }
 
 
 bool Mapper::run ()
 {
 	buildKeyFrames();
+
+	cout << "Keyframes built\n";
+
+	// XXX: Does this code run ?
+	theia::ReconstructionEstimatorOptions sfmOpts;
+	sfmOpts.reconstruction_estimator_type = theia::ReconstructionEstimatorType::INCREMENTAL;
+	theia::ReconstructionEstimator *sfmEstimator = theia::ReconstructionEstimator::Create(sfmOpts);
+	sfmEstimator->Estimate(viewgraph, constructor);
+
+	cout << "Estimated\n";
+
 	return true;
-}
-
-
-Matrix<double,3,4> CameraPinholeParamsRead::toMatrix()
-{
-	Matrix<double,3,4> K = Matrix<double,3,4>::Zero();
-	K(2,2) = 1.0;
-    K(0,0) = fx;
-    K(1,1) = fy;
-    K(0,2) = cx;
-    K(1,2) = cy;
-	return K;
 }

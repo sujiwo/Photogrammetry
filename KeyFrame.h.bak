@@ -10,22 +10,19 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
+#include <theia/theia.h>
 #include <vector>
 #include <Eigen/Eigen>
 #include <string>
 #include <memory>
 #include <tuple>
 
-#include "MapPoint.h"
+
+typedef std::tuple<theia::ViewId, theia::Feature, theia::ViewId, theia::Feature> FeaturePair;
 
 
-//typedef std::tuple<int64, cv::Point2f, int64, cv::Point2f> FeaturePair;
-struct FeaturePair {
-	int64 id1;
-	cv::Point2f keypoint1;
-	int64 id2;
-	cv::Point2f keypoint2;
-};
+inline theia::Feature keypoint2feature (const cv::KeyPoint &k)
+{ return theia::Feature(k.pt.x, k.pt.y); }
 
 
 class KeyFrame {
@@ -33,7 +30,9 @@ public:
 	KeyFrame(const std::string &path,
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
-			cv::Ptr<cv::FeatureDetector> fdetector);
+			cv::Ptr<cv::FeatureDetector> fdetector,
+			theia::Camera &camera0,
+			theia::Reconstruction* reconstructor);
 	virtual ~KeyFrame();
 
 	inline std::vector<cv::KeyPoint> getKeypoints()
@@ -47,25 +46,22 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
-	static void triangulate (
-		KeyFrame &k1, KeyFrame &k2,
-		std::vector<MapPoint*> ptsList
-	);
+	theia::Camera* getCamera()
+	{ return camera; }
 
-	int64 getId () const
-	{ return id; }
-
-	static int64 nextId;
-
+	const theia::ViewId& getViewId ()
+	{ return tview; }
 
 private:
-	int64 id;
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
 
 	Eigen::Vector3d position;
 	Eigen::Quaterniond orientation;
+
+	theia::ViewId tview;
+	theia::Camera *camera;
 
 	KeyFrame* prev;
 };
