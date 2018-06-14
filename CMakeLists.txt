@@ -22,6 +22,7 @@ add_executable (photogram
 	main.cpp
 	Mapper.cpp
 	KeyFrame.cpp
+	triangulation.cpp
 )
 
 target_link_libraries (

@@ -17,6 +17,8 @@
 #include <tuple>
 
 #include "MapPoint.h"
+#include "triangulation.h"
+
 
 
 //typedef std::tuple<int64, cv::Point2f, int64, cv::Point2f> FeaturePair;
@@ -48,8 +50,9 @@ public:
 	);
 
 	static void triangulate (
-		KeyFrame &k1, KeyFrame &k2,
-		std::vector<MapPoint*> ptsList
+		const KeyFrame &kf1, const KeyFrame &kf2,
+		std::vector<MapPoint*> ptsList,
+		const std::vector<FeaturePair> &featurePairs
 	);
 
 	int64 getId () const
@@ -57,6 +60,7 @@ public:
 
 	static int64 nextId;
 
+	Eigen::Matrix<double,3,4> externalParamMatrix () const;
 
 private:
 	int64 id;
