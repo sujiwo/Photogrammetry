@@ -18,6 +18,9 @@ using namespace std;
 using namespace Eigen;
 
 
+#define MIN_NEW_POINTS 20
+
+
 Mapper::Mapper(const string &datasetDir)
 {
 	string groundTruthList = datasetDir + "/pose.txt";
@@ -98,7 +101,27 @@ void Mapper::buildKeyFrames ()
 
 bool Mapper::run ()
 {
-	buildKeyFrames();
+	// First keyframe
+	KeyFrame *anchor = new KeyFrame (dataset[0].imagePath, dataset[0].position, dataset[0].orientation, mask, featureDetector);
+	frameList.push_back(anchor);
+
+	for (int i=1; i<dataset.size(); i++) {
+		auto &cdi = dataset[0];
+		KeyFrame *ckey = new KeyFrame (cdi.imagePath, cdi.position, cdi.orientation, mask, featureDetector);
+
+		// Match with anchor
+		vector<FeaturePair> match12;
+		vector<MapPoint*> newMapPoints;
+		KeyFrame::match(*anchor, *ckey, bfMatch, match12);
+		KeyFrame::triangulate(*anchor, *ckey, newMapPoints, match12);
+
+		if (newMapPoints.size() < MIN_NEW_POINTS) {
+			// Switch the anchor
+		}
+
+		// What now ?
+	}
+
 	return true;
 }
 

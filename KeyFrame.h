@@ -58,6 +58,9 @@ public:
 	int64 getId () const
 	{ return id; }
 
+	const std::vector<MapPoint*>& getVisiblePoints()
+	{ return visiblePoints; }
+
 	static int64 nextId;
 
 	Eigen::Matrix<double,3,4> externalParamMatrix () const;
@@ -70,6 +73,10 @@ private:
 
 	Eigen::Vector3d position;
 	Eigen::Quaterniond orientation;
+	Eigen::Vector3d normal;
+
+	// Visibility information
+	std::vector<MapPoint*> visiblePoints;
 
 	KeyFrame* prev;
 };

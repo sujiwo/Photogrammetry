@@ -31,6 +31,7 @@ KeyFrame::KeyFrame(
 	prev(NULL),
 	id (nextId++)
 {
+	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
 	image = cv::imread(path, cv::IMREAD_GRAYSCALE);
 	if (image.empty()==true)
 		throw runtime_error("Unable to open image file");
@@ -48,7 +49,7 @@ KeyFrame::~KeyFrame()
 // XXX: 3x4 or 4x4 ?
 poseMatrix KeyFrame::externalParamMatrix () const
 {
-	poseMatrix ex = Matrix<double,3,4>::Zero();
+	poseMatrix ex = poseMatrix::Zero();
 	Matrix3d R = orientation.toRotationMatrix().transpose();
 	ex.block<3,3>(0,0) = R;
 	ex.col(3) = -(R*position);
@@ -91,12 +92,23 @@ void KeyFrame::triangulate (
 
 		Vector4d triangulatedpt;
 		Triangulate (pm1, pm2, proj1, proj2, &triangulatedpt);
+		Vector3d pointm = triangulatedpt.head(3) / triangulatedpt[3];
 
 		// checking for regularity of triangulation result
-		// XXX: not written
+		// 1: Point must be in front of camera
+		Vector3d v1 = pointm - kf1.position;
+		double cos1 = v1.dot(kf1.normal) / v1.norm();
+		if (cos1 < 0)
+			continue;
+		Vector3d v2 = pointm - kf2.position;
+		double cos2 = v2.dot(kf2.normal) / v2.norm();
+		if (cos2 < 0)
+			continue;
 
-		Vector3d pointm = triangulatedpt.head(3) / triangulatedpt[3];
-		MapPoint *npoint = new MapPoint;
-		ptsList.push_back(npoint);
+		// 2: Must have enough parallax (ie. remove faraway points)
+
+
+//		MapPoint *npoint = new MapPoint;
+//		ptsList.push_back(npoint);
 	}
 }
