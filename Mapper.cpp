@@ -9,6 +9,8 @@
 #include <iostream>
 #include <fstream>
 #include <opencv2/highgui.hpp>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_cloud.h>
 
 #include "INIReader.h"
 #include "KeyFrame.h"
@@ -83,19 +85,6 @@ void Mapper::buildKeyFrames ()
 			featureDetector);
 		frameList.push_back(newkf);
 	}
-
-	// Build matches
-//	KeyFrame *anchor = frameList[0];
-
-//	for (int i=1; i<dataset.size(); i++) {
-//		KeyFrame *kf1 = frameList[i-1],
-//			*kf2 = frameList[i];
-//
-//		vector<FeaturePair> featPairs;
-//		featPairs.clear();
-//
-//		KeyFrame::match(*kf1, *kf2, bfMatch, featPairs);
-//	}
 }
 
 
@@ -117,12 +106,35 @@ bool Mapper::run ()
 
 		if (newMapPoints.size() < MIN_NEW_POINTS) {
 			// Switch the anchor
+			anchor = ckey;
 		}
+
+		frameList.push_back(ckey);
+		pointList.insert(pointList.end(), newMapPoints.begin(), newMapPoints.end());
 
 		// What now ?
 	}
 
 	return true;
+}
+
+
+void Mapper::dump (const std::string &filename)
+{
+	pcl::PointCloud<pcl::PointXYZ> vizCloud;
+	vizCloud.width = pointList.size();
+	vizCloud.height = 1;
+	vizCloud.resize(vizCloud.width);
+
+	uint i = 0;
+	for (auto *p: pointList) {
+		vizCloud.at(i).x = p->X();
+		vizCloud.at(i).y = p->Y();
+		vizCloud.at(i).z = p->Z();
+		i++;
+	}
+
+	pcl::io::savePCDFileBinary(filename, vizCloud);
 }
 
 

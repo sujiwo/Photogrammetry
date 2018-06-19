@@ -50,6 +50,8 @@ public:
 
 	bool run ();
 
+	void dump (const std::string &filename);
+
 private:
 	std::vector<DataItem> dataset;
 	CameraPinholeParamsRead cparams;

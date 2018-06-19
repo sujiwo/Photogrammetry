@@ -9,14 +9,36 @@
 #define MAPPOINT_H_
 
 #include <Eigen/Core>
+#include <vector>
+#include <tuple>
 #include <opencv2/core.hpp>
 
+
+class KeyFrame;
+
+
+struct KeyMapPoint {
+	KeyFrame *keyframe;
+	int keypointIdx;
+};
 
 class MapPoint
 {
 public:
-	MapPoint();
+	MapPoint(const Eigen::Vector3d &p);
 	virtual ~MapPoint();
+
+	void createDescriptor(const std::vector<KeyMapPoint> &visibleIn);
+
+	double X() const
+	{ return position.x(); }
+
+	double Y() const
+	{ return position.y(); }
+
+	double Z() const
+	{ return position.z(); }
+
 
 private:
 	Eigen::Vector3d position;

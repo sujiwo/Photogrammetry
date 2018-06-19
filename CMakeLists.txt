@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 find_package (Boost REQUIRED)
 find_package (OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
+find_package (PCL REQUIRED)
 
 #find_package (Theia REQUIRED)
 set (gflags_LIBRARIES gflags)
@@ -15,6 +16,7 @@ set (gflags_LIBRARIES gflags)
 include_directories (
 	${EIGEN3_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
+	${PCL_INCLUDE_DIRS}
 #	${THEIA_INCLUDE_DIRS}
 )
 
@@ -22,11 +24,13 @@ add_executable (photogram
 	main.cpp
 	Mapper.cpp
 	KeyFrame.cpp
+	MapPoint.cpp
 	triangulation.cpp
 )
 
 target_link_libraries (
 	photogram
 	${OpenCV_LIBS}
+	${PCL_LIBRARIES}
 #	${THEIA_LIBRARIES}
 )

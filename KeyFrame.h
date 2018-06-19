@@ -50,8 +50,8 @@ public:
 	);
 
 	static void triangulate (
-		const KeyFrame &kf1, const KeyFrame &kf2,
-		std::vector<MapPoint*> ptsList,
+		KeyFrame &kf1, KeyFrame &kf2,
+		std::vector<MapPoint*> &ptsList,
 		const std::vector<FeaturePair> &featurePairs
 	);
 

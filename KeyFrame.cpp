@@ -71,18 +71,24 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 			featurePairs.push_back (fp);
 		}
 	}
+
+	// 1: Match with visible map points in k1
+
+	// 2: Traditional match
 }
 
 
 void KeyFrame::triangulate (
-	const KeyFrame &kf1, const KeyFrame &kf2,
-	vector<MapPoint*> ptsList,
+	KeyFrame &kf1, KeyFrame &kf2,
+	vector<MapPoint*> &ptsList,
 	const vector<FeaturePair> &featurePairs )
 {
 	set<uint> badMatches;
 
 	poseMatrix pm1 = kf1.externalParamMatrix(),
 		pm2 = kf2.externalParamMatrix();
+
+	ptsList.clear();
 
 	for (uint i=0; i<featurePairs.size(); i++) {
 
@@ -108,7 +114,12 @@ void KeyFrame::triangulate (
 		// 2: Must have enough parallax (ie. remove faraway points)
 
 
-//		MapPoint *npoint = new MapPoint;
-//		ptsList.push_back(npoint);
+		MapPoint *npoint = new MapPoint (pointm);
+		ptsList.push_back(npoint);
+	}
+
+	for (auto *p: ptsList) {
+		kf1.visiblePoints.push_back(p);
+		kf2.visiblePoints.push_back(p);
 	}
 }
