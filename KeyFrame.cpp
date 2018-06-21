@@ -6,6 +6,7 @@
  */
 
 #include "KeyFrame.h"
+#include "Mapper.h"
 #include <exception>
 
 using namespace std;
@@ -18,13 +19,15 @@ Vector2d cv2eigen (const cv::Point2f &p)
 { return Eigen::Vector2d (p.x, p.y); }
 
 typedef Matrix<double,3,4> poseMatrix;
+typedef Matrix4d poseMatrix4;
 
 
 KeyFrame::KeyFrame(
 	const string &path,
 	const Vector3d &p, const Eigen::Quaterniond &o,
 	cv::Mat &mask,
-	cv::Ptr<cv::FeatureDetector> fdetector ) :
+	cv::Ptr<cv::FeatureDetector> fdetector,
+	const CameraPinholeParamsRead *cameraIntr) :
 
 	orientation(o),
 	position(p),
@@ -37,6 +40,9 @@ KeyFrame::KeyFrame(
 		throw runtime_error("Unable to open image file");
 
 	fdetector->detectAndCompute(image, mask, keypoints, descriptors, false);
+
+	Matrix<double,3,4> camInt = cameraIntr->toMatrix();
+	projMatrix = cameraIntr->toMatrix() * externalParamMatrix4();
 }
 
 
@@ -53,6 +59,16 @@ poseMatrix KeyFrame::externalParamMatrix () const
 	Matrix3d R = orientation.toRotationMatrix().transpose();
 	ex.block<3,3>(0,0) = R;
 	ex.col(3) = -(R*position);
+	return ex;
+}
+
+
+poseMatrix4 KeyFrame::externalParamMatrix4() const
+{
+	poseMatrix4 ex = poseMatrix4::Identity();
+	Matrix3d R = orientation.toRotationMatrix().transpose();
+	ex.block<3,3>(0,0) = R;
+	ex.col(3).head(3) = -(R*position);
 	return ex;
 }
 
@@ -85,8 +101,8 @@ void KeyFrame::triangulate (
 {
 	set<uint> badMatches;
 
-	poseMatrix pm1 = kf1.externalParamMatrix(),
-		pm2 = kf2.externalParamMatrix();
+	poseMatrix pm1 = kf1.projMatrix,
+		pm2 = kf2.projMatrix;
 
 	ptsList.clear();
 
@@ -97,7 +113,7 @@ void KeyFrame::triangulate (
 			proj2 = cv2eigen(fp.keypoint2);
 
 		Vector4d triangulatedpt;
-		Triangulate (pm1, pm2, proj1, proj2, &triangulatedpt);
+		TriangulateDLT (pm1, pm2, proj1, proj2, &triangulatedpt);
 		Vector3d pointm = triangulatedpt.head(3) / triangulatedpt[3];
 
 		// checking for regularity of triangulation result

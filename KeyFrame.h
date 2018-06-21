@@ -29,13 +29,16 @@ struct FeaturePair {
 	cv::Point2f keypoint2;
 };
 
+struct CameraPinholeParamsRead;
+
 
 class KeyFrame {
 public:
 	KeyFrame(const std::string &path,
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
-			cv::Ptr<cv::FeatureDetector> fdetector);
+			cv::Ptr<cv::FeatureDetector> fdetector,
+			const CameraPinholeParamsRead *cameraIntr);
 	virtual ~KeyFrame();
 
 	inline std::vector<cv::KeyPoint> getKeypoints()
@@ -64,6 +67,10 @@ public:
 	static int64 nextId;
 
 	Eigen::Matrix<double,3,4> externalParamMatrix () const;
+	Eigen::Matrix4d externalParamMatrix4 () const;
+
+	Eigen::Matrix<double,3,4> projectionMatrix () const
+	{ return projMatrix; }
 
 private:
 	int64 id;
@@ -74,6 +81,7 @@ private:
 	Eigen::Vector3d position;
 	Eigen::Quaterniond orientation;
 	Eigen::Vector3d normal;
+	Eigen::Matrix<double,3,4> projMatrix;
 
 	// Visibility information
 	std::vector<MapPoint*> visiblePoints;

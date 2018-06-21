@@ -10,7 +10,6 @@
 #include <fstream>
 #include <opencv2/highgui.hpp>
 #include <pcl/io/pcd_io.h>
-#include <pcl/point_cloud.h>
 
 #include "INIReader.h"
 #include "KeyFrame.h"
@@ -82,7 +81,7 @@ void Mapper::buildKeyFrames ()
 		KeyFrame *newkf = new KeyFrame(dataItem.imagePath,
 			dataItem.position, dataItem.orientation,
 			mask,
-			featureDetector);
+			featureDetector, &cparams);
 		frameList.push_back(newkf);
 	}
 }
@@ -91,12 +90,23 @@ void Mapper::buildKeyFrames ()
 bool Mapper::run ()
 {
 	// First keyframe
-	KeyFrame *anchor = new KeyFrame (dataset[0].imagePath, dataset[0].position, dataset[0].orientation, mask, featureDetector);
+	KeyFrame *anchor = new KeyFrame (dataset[0].imagePath,
+		dataset[0].position,
+		dataset[0].orientation,
+		mask,
+		featureDetector,
+		&cparams);
 	frameList.push_back(anchor);
 
-	for (int i=1; i<dataset.size(); i++) {
+//	for (int i=1; i<dataset.size(); i++) {
+	for (int i=1; i<10; i++) {
 		auto &cdi = dataset[0];
-		KeyFrame *ckey = new KeyFrame (cdi.imagePath, cdi.position, cdi.orientation, mask, featureDetector);
+		KeyFrame *ckey = new KeyFrame (cdi.imagePath,
+			cdi.position,
+			cdi.orientation,
+			mask,
+			featureDetector,
+			&cparams);
 
 		// Match with anchor
 		vector<FeaturePair> match12;
@@ -111,6 +121,7 @@ bool Mapper::run ()
 
 		frameList.push_back(ckey);
 		pointList.insert(pointList.end(), newMapPoints.begin(), newMapPoints.end());
+		cout << i << " / " << dataset.size() << endl;
 
 		// What now ?
 	}
@@ -121,24 +132,29 @@ bool Mapper::run ()
 
 void Mapper::dump (const std::string &filename)
 {
-	pcl::PointCloud<pcl::PointXYZ> vizCloud;
-	vizCloud.width = pointList.size();
-	vizCloud.height = 1;
-	vizCloud.resize(vizCloud.width);
-
-	uint i = 0;
-	for (auto *p: pointList) {
-		vizCloud.at(i).x = p->X();
-		vizCloud.at(i).y = p->Y();
-		vizCloud.at(i).z = p->Z();
-		i++;
-	}
-
-	pcl::io::savePCDFileBinary(filename, vizCloud);
+	pointCloudPtr vizCloud = dumpPointCloud();
+	pcl::io::savePCDFileBinary(filename, *vizCloud);
 }
 
 
-Matrix<double,3,4> CameraPinholeParamsRead::toMatrix()
+pointCloudPtr
+Mapper::dumpPointCloud ()
+{
+	pointCloudPtr pcv
+		(new pcl::PointCloud<pcl::PointXYZ>(pointList.size(), 1));
+
+	uint i = 0;
+	for (auto *p: pointList) {
+		pcv->at(i).x = p->X();
+		pcv->at(i).y = p->Y();
+		pcv->at(i).z = p->Z();
+		i++;
+	}
+
+	return pcv;
+}
+
+Matrix<double,3,4> CameraPinholeParamsRead::toMatrix() const
 {
 	Matrix<double,3,4> K = Matrix<double,3,4>::Zero();
 	K(2,2) = 1.0;

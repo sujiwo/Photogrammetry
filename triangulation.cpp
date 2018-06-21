@@ -109,20 +109,20 @@ bool Triangulate(const Matrix3x4d& pose1,
 }
 
 
-bool TriangulateDLT(const Matrix3x4d& pose1,
-                    const Matrix3x4d& pose2,
+bool TriangulateDLT(const Matrix3x4d& projMat1,
+                    const Matrix3x4d& projMat2,
                     const Vector2d& point1,
                     const Vector2d& point2,
                     Vector4d* triangulated_point)
 {
 	Matrix4d design_matrix;
-	design_matrix.row(0) = point1[0] * pose1.row(2) - pose1.row(0);
-	design_matrix.row(1) = point1[1] * pose1.row(2) - pose1.row(1);
-	design_matrix.row(2) = point2[0] * pose2.row(2) - pose2.row(0);
-	design_matrix.row(3) = point2[1] * pose2.row(2) - pose2.row(1);
+	design_matrix.row(0) = point1[0] * projMat1.row(2) - projMat1.row(0);
+	design_matrix.row(1) = point1[1] * projMat1.row(2) - projMat1.row(1);
+	design_matrix.row(2) = point2[0] * projMat2.row(2) - projMat2.row(0);
+	design_matrix.row(3) = point2[1] * projMat2.row(2) - projMat2.row(1);
 
 	// Extract nullspace.
 	*triangulated_point =
-		design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
+		design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().col(3);
 	return true;
 }

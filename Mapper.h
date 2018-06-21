@@ -14,6 +14,8 @@
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d.hpp>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #include "KeyFrame.h"
 #include "MapPoint.h"
@@ -34,8 +36,10 @@ struct CameraPinholeParamsRead {
 		fx, fy,
 		cx, cy;
 	int width, height;
-	Eigen::Matrix<double,3,4> toMatrix();
+	Eigen::Matrix<double,3,4> toMatrix() const;
 };
+
+typedef std::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pointCloudPtr;
 
 
 class Mapper
@@ -51,6 +55,8 @@ public:
 	bool run ();
 
 	void dump (const std::string &filename);
+
+	pointCloudPtr dumpPointCloud ();
 
 private:
 	std::vector<DataItem> dataset;

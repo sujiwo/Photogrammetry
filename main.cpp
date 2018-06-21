@@ -24,6 +24,7 @@ int main (int argc, char *argv[])
 	Mapper mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
 	mapBuilder.run();
+	mapBuilder.dump("/tmp/test.pcd");
 
 	return 0;
 }

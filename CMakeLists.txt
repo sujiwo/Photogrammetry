@@ -34,3 +34,6 @@ target_link_libraries (
 	${PCL_LIBRARIES}
 #	${THEIA_LIBRARIES}
 )
+
+add_executable (svdtest
+	svdtest.cpp)
