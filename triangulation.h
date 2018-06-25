@@ -20,7 +20,7 @@ bool Triangulate(
 	const Matrix3x4d& pose2,
 	const Eigen::Vector2d& point1,
 	const Eigen::Vector2d& point2,
-	Eigen::Vector4d* triangulated_point);
+	Eigen::Vector4d &triangulated_point);
 
 
 // Triangulates 2 posed views
@@ -29,6 +29,6 @@ bool TriangulateDLT(
 	const Matrix3x4d& pose2,
 	const Eigen::Vector2d& point1,
 	const Eigen::Vector2d& point2,
-	Eigen::Vector4d* triangulated_point);
+	Eigen::Vector4d &triangulated_point);
 
 #endif /* TRIANGULATION_H_ */

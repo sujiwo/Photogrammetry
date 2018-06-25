@@ -22,6 +22,9 @@ using namespace Eigen;
 #define MIN_NEW_POINTS 20
 
 
+typedef Matrix<double,3,4> CameraIntrinsicMatrix;
+
+
 Mapper::Mapper(const string &datasetDir)
 {
 	string groundTruthList = datasetDir + "/pose.txt";
@@ -98,9 +101,8 @@ bool Mapper::run ()
 		&cparams);
 	frameList.push_back(anchor);
 
-//	for (int i=1; i<dataset.size(); i++) {
-	for (int i=1; i<10; i++) {
-		auto &cdi = dataset[0];
+	for (int i=1; i<dataset.size(); i++) {
+		auto &cdi = dataset[i];
 		KeyFrame *ckey = new KeyFrame (cdi.imagePath,
 			cdi.position,
 			cdi.orientation,
@@ -114,14 +116,15 @@ bool Mapper::run ()
 		KeyFrame::match(*anchor, *ckey, bfMatch, match12);
 		KeyFrame::triangulate(*anchor, *ckey, newMapPoints, match12);
 
-		if (newMapPoints.size() < MIN_NEW_POINTS) {
-			// Switch the anchor
-			anchor = ckey;
-		}
+//		if (newMapPoints.size() < MIN_NEW_POINTS) {
+//			// Switch the anchor
+//			anchor = ckey;
+//		}
+		anchor = ckey;
 
 		frameList.push_back(ckey);
 		pointList.insert(pointList.end(), newMapPoints.begin(), newMapPoints.end());
-		cout << i << " / " << dataset.size() << endl;
+		cout << i+1 << " / " << dataset.size() << "; # of points: " << pointList.size() << endl;
 
 		// What now ?
 	}

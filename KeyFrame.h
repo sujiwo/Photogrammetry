@@ -72,6 +72,8 @@ public:
 	Eigen::Matrix<double,3,4> projectionMatrix () const
 	{ return projMatrix; }
 
+	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
+
 private:
 	int64 id;
 	cv::Mat image;

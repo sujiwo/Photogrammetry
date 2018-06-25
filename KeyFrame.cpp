@@ -22,6 +22,9 @@ typedef Matrix<double,3,4> poseMatrix;
 typedef Matrix4d poseMatrix4;
 
 
+#define pixelReprojectionError 6.0
+
+
 KeyFrame::KeyFrame(
 	const string &path,
 	const Vector3d &p, const Eigen::Quaterniond &o,
@@ -113,8 +116,14 @@ void KeyFrame::triangulate (
 			proj2 = cv2eigen(fp.keypoint2);
 
 		Vector4d triangulatedpt;
-		TriangulateDLT (pm1, pm2, proj1, proj2, &triangulatedpt);
-		Vector3d pointm = triangulatedpt.head(3) / triangulatedpt[3];
+		TriangulateDLT (pm1, pm2, proj1, proj2, triangulatedpt);
+		Vector3d pointm = triangulatedpt.head(3);
+
+		// Check for Reprojection Errors
+		float pj1 = (kf1.project(pointm) - proj1).norm(),
+			pj2 = (kf2.project(pointm) - proj2).norm();
+		if (pj1 > pixelReprojectionError or pj2 > pixelReprojectionError)
+			continue;
 
 		// checking for regularity of triangulation result
 		// 1: Point must be in front of camera
@@ -122,13 +131,17 @@ void KeyFrame::triangulate (
 		double cos1 = v1.dot(kf1.normal) / v1.norm();
 		if (cos1 < 0)
 			continue;
+		double dist1 = v1.norm();
 		Vector3d v2 = pointm - kf2.position;
 		double cos2 = v2.dot(kf2.normal) / v2.norm();
 		if (cos2 < 0)
 			continue;
+		double dist2 = v2.norm();
 
 		// 2: Must have enough parallax (ie. remove faraway points)
-
+		double cosParallax = (-v1).dot(-v2) / (dist1 * dist2);
+		if (cosParallax >= 0.999990481)
+			continue;
 
 		MapPoint *npoint = new MapPoint (pointm);
 		ptsList.push_back(npoint);
@@ -138,4 +151,11 @@ void KeyFrame::triangulate (
 		kf1.visiblePoints.push_back(p);
 		kf2.visiblePoints.push_back(p);
 	}
+}
+
+
+Vector2d KeyFrame::project(const Vector3d &pt3) const
+{
+	Vector3d ptx = projMatrix * pt3.homogeneous();
+	return ptx.head(2) / ptx[2];
 }
