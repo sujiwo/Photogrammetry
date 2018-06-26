@@ -13,10 +13,14 @@ find_package (PCL REQUIRED)
 set (gflags_LIBRARIES gflags)
 
 
+add_subdirectory (g2o)
+
+
 include_directories (
 	${EIGEN3_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
+	g2o
 #	${THEIA_INCLUDE_DIRS}
 )
 
@@ -32,8 +36,7 @@ target_link_libraries (
 	photogram
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
+	g2o
 #	${THEIA_LIBRARIES}
 )
 
-add_executable (svdtest
-	svdtest.cpp)
