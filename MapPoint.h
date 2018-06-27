@@ -22,6 +22,7 @@ struct KeyMapPoint {
 	int keypointIdx;
 };
 
+
 class MapPoint
 {
 public:
@@ -39,12 +40,21 @@ public:
 	double Z() const
 	{ return position.z(); }
 
+	Eigen::Vector3d getPosition () const
+	{ return position; }
+
+	uint64 getId () const
+	{ return id; }
 
 private:
 	Eigen::Vector3d position;
 
 	// Best Descriptor
 	cv::Mat descriptor;
+
+	uint64 id;
+
+	static uint64 nextId;
 };
 
 #endif /* MAPPOINT_H_ */

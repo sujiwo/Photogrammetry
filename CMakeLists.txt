@@ -30,6 +30,7 @@ add_executable (photogram
 	KeyFrame.cpp
 	MapPoint.cpp
 	triangulation.cpp
+	optimizer.cpp
 )
 
 target_link_libraries (

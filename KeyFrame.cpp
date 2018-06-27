@@ -13,7 +13,7 @@ using namespace std;
 using namespace Eigen;
 
 
-int64 KeyFrame::nextId = 0;
+uint64 KeyFrame::nextId = 0;
 
 Vector2d cv2eigen (const cv::Point2f &p)
 { return Eigen::Vector2d (p.x, p.y); }
@@ -145,11 +145,11 @@ void KeyFrame::triangulate (
 
 		MapPoint *npoint = new MapPoint (pointm);
 		ptsList.push_back(npoint);
-	}
 
-	for (auto *p: ptsList) {
-		kf1.visiblePoints.push_back(p);
-		kf2.visiblePoints.push_back(p);
+		kf1.visiblePoints.push_back(npoint);
+		kf1.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id1));
+		kf2.visiblePoints.push_back(npoint);
+		kf2.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id2));
 	}
 }
 
