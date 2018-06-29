@@ -20,6 +20,7 @@ using namespace Eigen;
 
 
 #define MIN_NEW_POINTS 20
+#define MAX_ORB_POINTS_IN_FRAME 6000
 
 
 typedef Matrix<double,3,4> CameraIntrinsicMatrix;
@@ -66,7 +67,7 @@ Mapper::Mapper(const string &datasetDir)
 	}
 
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
-	featureDetector = cv::ORB::create(6000);
+	featureDetector = cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
 	bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
 
 	inputfd.close();
@@ -115,6 +116,14 @@ bool Mapper::run ()
 		vector<MapPoint*> newMapPoints;
 		KeyFrame::match(*anchor, *ckey, bfMatch, match12);
 		KeyFrame::triangulate(*anchor, *ckey, newMapPoints, match12);
+
+		// Update relationship/visibility information
+		for (auto *p: newMapPoints) {
+//			framePoints[anchor].insert(p);
+//			framePoints[ckey].insert(p);
+			pointAppearances[p].insert(anchor);
+			pointAppearances[p].insert(ckey);
+		}
 
 //		if (newMapPoints.size() < MIN_NEW_POINTS) {
 //			// Switch the anchor
@@ -166,4 +175,22 @@ Matrix<double,3,4> CameraPinholeParamsRead::toMatrix() const
     K(0,2) = cx;
     K(1,2) = cy;
 	return K;
+}
+
+
+void Mapper::trainVocabulary()
+{
+//	Highly doubtful, this number is too low!
+	cv::BOWKMeansTrainer bowTrainer(MAX_ORB_POINTS_IN_FRAME);
+	cv::Mat sceneDescriptors;
+
+	for (int i=0; i<frameList.size(); i++) {
+		auto *kf = frameList[i];
+
+		for (int j=0; j<kf->numOfKeyPoints(); j++) {
+			bowTrainer.add(kf->getDescriptorAt(j));
+		}
+	}
+
+	vocabulary = bowTrainer.cluster();
 }

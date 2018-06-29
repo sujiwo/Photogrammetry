@@ -42,6 +42,9 @@ public:
 			const CameraPinholeParamsRead *cameraIntr);
 	virtual ~KeyFrame();
 
+	inline int numOfKeyPoints() const
+	{ return keypoints.size(); }
+
 	inline std::vector<cv::KeyPoint> getKeypoints() const
 	{ return keypoints; }
 
@@ -68,8 +71,8 @@ public:
 	uint64 getId () const
 	{ return id; }
 
-	const std::vector<MapPoint*>& getVisiblePoints()
-	{ return visiblePoints; }
+//	const std::vector<MapPoint*>& getVisiblePoints()
+//	{ return visiblePoints; }
 
 	Eigen::Matrix<double,3,4> externalParamMatrix () const;
 	Eigen::Matrix4d externalParamMatrix4 () const;
@@ -99,8 +102,8 @@ private:
 	Eigen::Matrix<double,3,4> projMatrix;
 
 	// Visibility information
-	std::vector<MapPoint*> visiblePoints;
-	std::map<const uint64, uint64> mapPointIdx;
+//	std::vector<MapPoint*> visiblePoints;
+//	std::map<const uint64, uint64> mapPointIdx;
 
 	static uint64 nextId;
 

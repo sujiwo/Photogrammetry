@@ -146,10 +146,10 @@ void KeyFrame::triangulate (
 		MapPoint *npoint = new MapPoint (pointm);
 		ptsList.push_back(npoint);
 
-		kf1.visiblePoints.push_back(npoint);
-		kf1.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id1));
-		kf2.visiblePoints.push_back(npoint);
-		kf2.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id2));
+//		kf1.visiblePoints.push_back(npoint);
+//		kf1.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id1));
+//		kf2.visiblePoints.push_back(npoint);
+//		kf2.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id2));
 	}
 }
 

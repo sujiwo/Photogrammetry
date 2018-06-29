@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <memory>
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
@@ -72,8 +73,16 @@ private:
 	vector<KeyFrame*> frameList;
 	vector<MapPoint*> pointList;
 
+	// Relationship between MapPoint and KeyFrames
+	std::map<MapPoint*, std::set<KeyFrame*> > pointAppearances;
+	std::map<KeyFrame*,
+		std::map<MapPoint*, int> > framePoints;
+
+
 	void buildKeyFrames();
 
+	cv::Mat vocabulary;
+	void trainVocabulary ();
 };
 
 #endif /* MAPPER_H_ */

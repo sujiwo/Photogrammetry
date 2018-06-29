@@ -24,7 +24,12 @@ g2o::SE3Quat toSE3Quat (const Eigen::Vector3d &position, const Eigen::Quaternion
 { return g2o::SE3Quat(orientation, position); }
 
 
-void bundle_adjustment (vector<KeyFrame*> &kfList, vector<MapPoint*> &mpList)
+void bundle_adjustment (
+	vector<KeyFrame*> &kfList,
+	vector<MapPoint*> &mpList,
+	map<KeyFrame*, set<MapPoint*> > kfToMp,
+	map<MapPoint*, set<KeyFrame*> > mpToKf
+)
 {
 	g2o::SparseOptimizer optimizer;
 	g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType> linearSolver;
@@ -48,6 +53,11 @@ void bundle_adjustment (vector<KeyFrame*> &kfList, vector<MapPoint*> &mpList)
 		optimizer.addVertex(vMp);
 
 		// Edges
+		set<KeyFrame*> kfTargets = mpToKf[mp];
+		for (auto *px: kfTargets) {
 
+//			Vector2d obs
+			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
+		}
 	}
 }
