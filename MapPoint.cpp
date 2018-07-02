@@ -12,7 +12,7 @@ using namespace std;
 using namespace Eigen;
 
 
-uint64 MapPoint::nextId = 0;
+mpid MapPoint::nextId = 0;
 
 
 MapPoint::MapPoint(const Vector3d &p) :

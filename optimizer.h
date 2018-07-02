@@ -14,12 +14,7 @@
 #include "MapPoint.h"
 
 
-void bundle_adjustment (
-	std::vector<KeyFrame*> &kfList,
-	std::vector<MapPoint*> &mpList,
-	std::map<KeyFrame*, std::set<MapPoint*> > kfToMp,
-	std::map<MapPoint*, std::set<KeyFrame*> > mpToKf
-);
+void bundle_adjustment (VMap &orgMap);
 
 
 #endif /* OPTIMIZER_H_ */

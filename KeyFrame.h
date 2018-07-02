@@ -17,6 +17,8 @@
 #include <memory>
 #include <tuple>
 
+
+#include "VMap.h"
 #include "MapPoint.h"
 #include "triangulation.h"
 
@@ -24,22 +26,22 @@
 
 //typedef std::tuple<int64, cv::Point2f, int64, cv::Point2f> FeaturePair;
 struct FeaturePair {
-	uint64 id1;
+	kpid kpid1;
 	cv::Point2f keypoint1;
-	uint64 id2;
+	kpid kpid2;
 	cv::Point2f keypoint2;
 };
 
-struct CameraPinholeParamsRead;
+struct CameraPinholeParams;
 
 
 class KeyFrame {
 public:
-	KeyFrame(const std::string &path,
+	KeyFrame(const cv::Mat &imgSrc,
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
 			cv::Ptr<cv::FeatureDetector> fdetector,
-			const CameraPinholeParamsRead *cameraIntr);
+			const CameraPinholeParams *cameraIntr);
 	virtual ~KeyFrame();
 
 	inline int numOfKeyPoints() const
@@ -63,14 +65,15 @@ public:
 	);
 
 	static void triangulate (
-		KeyFrame &kf1, KeyFrame &kf2,
-		std::vector<MapPoint*> &ptsList,
+		const KeyFrame *kf1, const KeyFrame *kf2,
+		std::vector<kfid> &mapPointList,
 		const std::vector<FeaturePair> &featurePairs,
-		std::map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame1,
-		std::map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame2
+		std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame1,
+		std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame2,
+		VMap *parent
 	);
 
-	uint64 getId () const
+	kfid getId () const
 	{ return id; }
 
 //	const std::vector<MapPoint*>& getVisiblePoints()
@@ -93,7 +96,7 @@ public:
 //	void appendMapPoint (const MapPoint *mp, uint64 kptIdx);
 
 private:
-	uint64 id;
+	kfid id;
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
@@ -102,10 +105,6 @@ private:
 	Eigen::Quaterniond orientation;
 	Eigen::Vector3d normal;
 	Eigen::Matrix<double,3,4> projMatrix;
-
-	// Visibility information
-//	std::vector<MapPoint*> visiblePoints;
-//	std::map<const uint64, uint64> mapPointIdx;
 
 	static uint64 nextId;
 

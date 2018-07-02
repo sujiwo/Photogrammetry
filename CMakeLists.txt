@@ -26,7 +26,8 @@ include_directories (
 
 add_executable (photogram
 	main.cpp
-	Mapper.cpp
+	VMap.cpp
+	MapBuilder.cpp
 	KeyFrame.cpp
 	MapPoint.cpp
 	triangulation.cpp

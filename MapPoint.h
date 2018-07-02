@@ -12,6 +12,7 @@
 #include <vector>
 #include <tuple>
 #include <opencv2/core.hpp>
+#include "VMap.h"
 
 
 class KeyFrame;
@@ -43,7 +44,7 @@ public:
 	Eigen::Vector3d getPosition () const
 	{ return position; }
 
-	uint64 getId () const
+	mpid getId () const
 	{ return id; }
 
 private:
@@ -52,9 +53,9 @@ private:
 	// Best Descriptor
 	cv::Mat descriptor;
 
-	uint64 id;
+	mpid id;
 
-	static uint64 nextId;
+	static mpid nextId;
 };
 
 #endif /* MAPPOINT_H_ */

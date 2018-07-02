@@ -20,45 +20,43 @@ using namespace std;
 using namespace Eigen;
 
 
+typedef uint64 oid;
+
+
 g2o::SE3Quat toSE3Quat (const Eigen::Vector3d &position, const Eigen::Quaterniond &orientation)
 { return g2o::SE3Quat(orientation, position); }
 
 
-void bundle_adjustment (
-	vector<KeyFrame*> &kfList,
-	vector<MapPoint*> &mpList,
-	map<KeyFrame*, set<MapPoint*> > kfToMp,
-	map<MapPoint*, set<KeyFrame*> > mpToKf,
-
-)
+void bundle_adjustment (VMap *orgMap)
 {
+	vector<kfid> keyframeList = orgMap->allKeyFrames();
+	vector<mpid> mappointList = orgMap->allMapPoints();
+
 	g2o::SparseOptimizer optimizer;
 	g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType> linearSolver;
 
-	uint64 maxKfId = 0;
+	map<oid, pair<char,oid> > vertexIdMap;
+	uint64 vId = 0;
 
-	for (auto *kf: kfList) {
+	for (kfid &kid: keyframeList) {
 		g2o::VertexSE3Expmap *vKf = new g2o::VertexSE3Expmap();
+		KeyFrame *kf = orgMap->keyframe(kid);
 		vKf->setEstimate (toSE3Quat(kf->getPosition(), kf->getOrientation()));
-		vKf->setId(kf->getId());
+		vKf->setId(vId);
 		optimizer.addVertex(vKf);
-//		if (kf->getId() > maxKfId)
-		maxKfId = (kf->getId() > maxKfId ? kf->getId() : maxKfId);
+		vertexIdMap.insert(pair<oid, pair<char,oid> > (vId, pair<char,oid>('k', kid)));
+		vId ++;
 	}
 
-	for (auto *mp: mpList) {
+	for (mpid &mid: mappointList) {
 		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
+		MapPoint *mp = orgMap->mappoint(mid);
 		vMp->setEstimate(mp->getPosition());
 		vMp->setMarginalized(true);
-		vMp->setId(mp->getId() + maxKfId + 1);
+		vMp->setId(vId);
 		optimizer.addVertex(vMp);
+		vertexIdMap.insert(pair<oid, pair<char,oid> > (vId, pair<char,oid>('m', mid)));
 
 		// Edges
-		set<KeyFrame*> kfTargets = mpToKf[mp];
-		for (auto *px: kfTargets) {
-
-//			Vector2d obs
-			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
-		}
 	}
 }

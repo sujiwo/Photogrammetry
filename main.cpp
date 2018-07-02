@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include "INIReader.h"
 #include "KeyFrame.h"
-#include "Mapper.h"
+#include "MapBuilder.h"
 
 
 
@@ -21,10 +21,10 @@ using namespace Eigen;
 
 int main (int argc, char *argv[])
 {
-	Mapper mapBuilder ("/home/sujiwo/Data/track");
+	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
 	mapBuilder.run();
-	mapBuilder.dump("/tmp/test.pcd");
+//	mapBuilder.dump("/tmp/test.pcd");
 
 	return 0;
 }

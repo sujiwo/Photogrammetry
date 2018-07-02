@@ -6,14 +6,14 @@
  */
 
 #include "KeyFrame.h"
-#include "Mapper.h"
 #include <exception>
+#include "MapBuilder.h"
 
 using namespace std;
 using namespace Eigen;
 
 
-uint64 KeyFrame::nextId = 0;
+kfid KeyFrame::nextId = 0;
 
 Vector2d cv2eigen (const cv::Point2f &p)
 { return Eigen::Vector2d (p.x, p.y); }
@@ -26,11 +26,11 @@ typedef Matrix4d poseMatrix4;
 
 
 KeyFrame::KeyFrame(
-	const string &path,
+		const cv::Mat &imgSrc,
 	const Vector3d &p, const Eigen::Quaterniond &o,
 	cv::Mat &mask,
 	cv::Ptr<cv::FeatureDetector> fdetector,
-	const CameraPinholeParamsRead *cameraIntr) :
+	const CameraPinholeParams *cameraIntr) :
 
 	orientation(o),
 	position(p),
@@ -38,11 +38,8 @@ KeyFrame::KeyFrame(
 	id (nextId++)
 {
 	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
-	image = cv::imread(path, cv::IMREAD_GRAYSCALE);
-	if (image.empty()==true)
-		throw runtime_error("Unable to open image file");
 
-	fdetector->detectAndCompute(image, mask, keypoints, descriptors, false);
+	fdetector->detectAndCompute(imgSrc, mask, keypoints, descriptors, false);
 
 	Matrix<double,3,4> camInt = cameraIntr->toMatrix();
 	projMatrix = cameraIntr->toMatrix() * externalParamMatrix4();
@@ -86,34 +83,30 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 
 	for (auto &m: k12matches) {
 		if (m.trainIdx < k1.keypoints.size() and m.queryIdx < k2.keypoints.size()) {
-			FeaturePair fp = {k1.id, k1.keypoints[m.trainIdx].pt, k2.id, k2.keypoints[m.queryIdx].pt};
+			FeaturePair fp = {m.trainIdx, k1.keypoints[m.trainIdx].pt, m.queryIdx, k2.keypoints[m.queryIdx].pt};
 			featurePairs.push_back (fp);
 		}
 	}
-
-	// 1: Match with visible map points in k1
-
-	// 2: Traditional match
 }
 
 
 void KeyFrame::triangulate (
-	KeyFrame &kf1, KeyFrame &kf2,
-	vector<MapPoint*> &ptsList,
-	const vector<FeaturePair> &featurePairs,
-	map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame1,
-	map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame2
-	)
+	const KeyFrame *kf1, const KeyFrame *kf2,
+	std::vector<mpid> &mapPointList,
+	const std::vector<FeaturePair> &featurePairs,
+	std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame1,
+	std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame2,
+	VMap *parent
+)
 {
 	set<uint> badMatches;
 
-	poseMatrix pm1 = kf1.projMatrix,
-		pm2 = kf2.projMatrix;
+	const poseMatrix &pm1 = kf1->projMatrix,
+		&pm2 = kf2->projMatrix;
 
-	ptsList.clear();
+	mapPointList.clear();
 
 	for (uint i=0; i<featurePairs.size(); i++) {
-
 		auto &fp = featurePairs[i];
 		Vector2d proj1 = cv2eigen(fp.keypoint1),
 			proj2 = cv2eigen(fp.keypoint2);
@@ -123,20 +116,20 @@ void KeyFrame::triangulate (
 		Vector3d pointm = triangulatedpt.head(3);
 
 		// Check for Reprojection Errors
-		float pj1 = (kf1.project(pointm) - proj1).norm(),
-			pj2 = (kf2.project(pointm) - proj2).norm();
+		float pj1 = (kf1->project(pointm) - proj1).norm(),
+			pj2 = (kf2->project(pointm) - proj2).norm();
 		if (pj1 > pixelReprojectionError or pj2 > pixelReprojectionError)
 			continue;
 
 		// checking for regularity of triangulation result
 		// 1: Point must be in front of camera
-		Vector3d v1 = pointm - kf1.position;
-		double cos1 = v1.dot(kf1.normal) / v1.norm();
+		Vector3d v1 = pointm - kf1->position;
+		double cos1 = v1.dot(kf1->normal) / v1.norm();
 		if (cos1 < 0)
 			continue;
 		double dist1 = v1.norm();
-		Vector3d v2 = pointm - kf2.position;
-		double cos2 = v2.dot(kf2.normal) / v2.norm();
+		Vector3d v2 = pointm - kf2->position;
+		double cos2 = v2.dot(kf2->normal) / v2.norm();
 		if (cos2 < 0)
 			continue;
 		double dist2 = v2.norm();
@@ -146,13 +139,13 @@ void KeyFrame::triangulate (
 		if (cosParallax >= 0.999990481)
 			continue;
 
-		MapPoint *npoint = new MapPoint (pointm);
-		ptsList.push_back(npoint);
-
-		mapPointToKeyPointInKeyFrame1[npoint] = fp.id1;
-		mapPointToKeyPointInKeyFrame2[npoint] = fp.id2;
+		mpid newMp = parent->createMapPoint(pointm);
+		mapPointList.push_back(newMp);
+		mapPointToKeyPointInKeyFrame1[newMp] = fp.kpid1;
+		mapPointToKeyPointInKeyFrame2[newMp] = fp.kpid2;
 	}
 }
+
 
 
 Vector2d KeyFrame::project(const Vector3d &pt3) const
