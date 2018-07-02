@@ -76,7 +76,7 @@ private:
 	// Relationship between MapPoint and KeyFrames
 	std::map<MapPoint*, std::set<KeyFrame*> > pointAppearances;
 	std::map<KeyFrame*,
-		std::map<MapPoint*, int> > framePoints;
+		std::map<MapPoint*, uint64> > framePoints;
 
 
 	void buildKeyFrames();

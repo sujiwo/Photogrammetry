@@ -28,7 +28,8 @@ void bundle_adjustment (
 	vector<KeyFrame*> &kfList,
 	vector<MapPoint*> &mpList,
 	map<KeyFrame*, set<MapPoint*> > kfToMp,
-	map<MapPoint*, set<KeyFrame*> > mpToKf
+	map<MapPoint*, set<KeyFrame*> > mpToKf,
+
 )
 {
 	g2o::SparseOptimizer optimizer;

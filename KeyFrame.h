@@ -65,7 +65,9 @@ public:
 	static void triangulate (
 		KeyFrame &kf1, KeyFrame &kf2,
 		std::vector<MapPoint*> &ptsList,
-		const std::vector<FeaturePair> &featurePairs
+		const std::vector<FeaturePair> &featurePairs,
+		std::map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame1,
+		std::map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame2
 	);
 
 	uint64 getId () const

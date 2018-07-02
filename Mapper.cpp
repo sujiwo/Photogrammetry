@@ -115,12 +115,15 @@ bool Mapper::run ()
 		vector<FeaturePair> match12;
 		vector<MapPoint*> newMapPoints;
 		KeyFrame::match(*anchor, *ckey, bfMatch, match12);
-		KeyFrame::triangulate(*anchor, *ckey, newMapPoints, match12);
+
+		framePoints[anchor] = map<MapPoint*, uint64>();
+		framePoints[ckey] = map<MapPoint*, uint64>();
+
+		KeyFrame::triangulate(*anchor, *ckey, newMapPoints, match12,
+			framePoints[anchor], framePoints[ckey]);
 
 		// Update relationship/visibility information
 		for (auto *p: newMapPoints) {
-//			framePoints[anchor].insert(p);
-//			framePoints[ckey].insert(p);
 			pointAppearances[p].insert(anchor);
 			pointAppearances[p].insert(ckey);
 		}

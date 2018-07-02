@@ -100,7 +100,10 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 void KeyFrame::triangulate (
 	KeyFrame &kf1, KeyFrame &kf2,
 	vector<MapPoint*> &ptsList,
-	const vector<FeaturePair> &featurePairs )
+	const vector<FeaturePair> &featurePairs,
+	map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame1,
+	map<MapPoint*, uint64> &mapPointToKeyPointInKeyFrame2
+	)
 {
 	set<uint> badMatches;
 
@@ -146,10 +149,8 @@ void KeyFrame::triangulate (
 		MapPoint *npoint = new MapPoint (pointm);
 		ptsList.push_back(npoint);
 
-//		kf1.visiblePoints.push_back(npoint);
-//		kf1.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id1));
-//		kf2.visiblePoints.push_back(npoint);
-//		kf2.mapPointIdx.insert(pair<uint64,uint64>(npoint->getId(), fp.id2));
+		mapPointToKeyPointInKeyFrame1[npoint] = fp.id1;
+		mapPointToKeyPointInKeyFrame2[npoint] = fp.id2;
 	}
 }
 
