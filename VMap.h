@@ -44,6 +44,9 @@ public:
 	inline void setCameraParameters (const CameraPinholeParams &vscamIntr)
 	{ camera = vscamIntr; }
 
+	inline const CameraPinholeParams getCameraParameters()
+	{ return camera; }
+
 	kfid createKeyFrame (
 		const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
@@ -69,6 +72,9 @@ public:
 
 	std::set<kfid> getRelatedKeyFrames (const mpid &i) const
 	{ return pointAppearances.at(i); }
+
+	inline kpid getKeyPointId (const kfid k, const mpid p)
+	{ return framePoints.at(k).at(p); }
 
 protected:
 	cv::Mat vocabulary;
