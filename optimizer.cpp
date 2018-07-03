@@ -28,6 +28,14 @@ g2o::SE3Quat toSE3Quat
 { return g2o::SE3Quat(orientation, position); }
 
 
+void fromSE3Quat(const g2o::SE3Quat &pose,
+	Vector3d &position, Quaterniond &orientation)
+{
+	position = pose.translation();
+	orientation = pose.rotation();
+}
+
+
 void bundle_adjustment (VMap *orgMap)
 {
 	vector<kfid> keyframeList = orgMap->allKeyFrames();
@@ -40,7 +48,7 @@ void bundle_adjustment (VMap *orgMap)
 	map<kfid, g2o::VertexSE3Expmap*> vertexKfMapInv;
 	map<oid, mpid> vertexMpMap;
 	map<mpid, g2o::VertexSBAPointXYZ*> vertexMpMapInv;
-	uint64 vId = 0;
+	oid vId = 0;
 
 	for (kfid &kId: keyframeList) {
 
@@ -94,6 +102,25 @@ void bundle_adjustment (VMap *orgMap)
 	// XXX: Determine number of iterations
 	optimizer.optimize(10);
 
-	// Recovery of otimized data
+	// Recovery of optimized data
+	// KeyFrames
+	for (auto &kVpt: vertexKfMap) {
 
+		oid vId = kVpt.first;
+		kfid kId = kVpt.second;
+		KeyFrame *kf = orgMap->keyframe(kId);
+		g2o::VertexSE3Expmap *vKfSE3 = static_cast<g2o::VertexSE3Expmap*> (optimizer.vertex(vId));
+
+		g2o::SE3Quat kfPoseSE3 = vKfSE3->estimate();
+		fromSE3Quat(kfPoseSE3, kf->getPosition(), kf->getOrientation());
+	}
+
+	// MapPoints
+	for (auto &mVpt: vertexMpMap) {
+		oid vId = mVpt.first;
+		mpid mid = mVpt.second;
+		MapPoint *mp = orgMap->mappoint(mid);
+		g2o::VertexSBAPointXYZ *vMp = static_cast<g2o::VertexSBAPointXYZ*> (optimizer.vertex(vId));
+		mp->setPosition(vMp->estimate());
+	}
 }

@@ -44,6 +44,9 @@ public:
 	Eigen::Vector3d getPosition () const
 	{ return position; }
 
+	inline void setPosition (const Eigen::Vector3d &pw)
+	{ position = pw; }
+
 	mpid getId () const
 	{ return id; }
 

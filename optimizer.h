@@ -14,7 +14,7 @@
 #include "MapPoint.h"
 
 
-void bundle_adjustment (VMap &orgMap);
+void bundle_adjustment (VMap *orgMap);
 
 
 #endif /* OPTIMIZER_H_ */

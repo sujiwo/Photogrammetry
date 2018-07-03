@@ -16,6 +16,8 @@
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d.hpp"
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 
 class KeyFrame;
@@ -47,6 +49,8 @@ public:
 	inline const CameraPinholeParams getCameraParameters()
 	{ return camera; }
 
+	pcl::PointCloud<pcl::PointXYZ>::Ptr dumpPointCloudFromMapPoints ();
+
 	kfid createKeyFrame (
 		const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
@@ -75,6 +79,9 @@ public:
 
 	inline kpid getKeyPointId (const kfid k, const mpid p)
 	{ return framePoints.at(k).at(p); }
+
+	bool save (const std::string &path);
+	bool load (const std::string &path);
 
 protected:
 	cv::Mat vocabulary;

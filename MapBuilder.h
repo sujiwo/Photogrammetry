@@ -47,7 +47,7 @@ public:
 
 	bool run ();
 
-//	void dump (const std::string &filename);
+	void dump (const std::string &filename);
 
 //	pointCloudPtr dumpPointCloud ();
 
@@ -67,7 +67,7 @@ private:
 //	vector<KeyFrame*> frameList;
 //	vector<MapPoint*> pointList;
 
-//	void buildKeyFrames();
+	void buildKeyFrames();
 
 	cv::Mat vocabulary;
 	void trainVocabulary ();

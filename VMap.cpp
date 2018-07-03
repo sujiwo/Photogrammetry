@@ -119,3 +119,24 @@ VMap::allMapPoints () const
 	}
 	return mpIdList;
 }
+
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+VMap::dumpPointCloudFromMapPoints ()
+{
+	pcl::PointCloud<pcl::PointXYZ>::Ptr mapPtCl
+		(new pcl::PointCloud<pcl::PointXYZ>(mappointInvIdx.size(), 1));
+
+	uint64 i = 0;
+	for (auto &mpIdx: mappointInvIdx) {
+		MapPoint *mp = mpIdx.second;
+		mapPtCl->at(i).x = mp->X();
+		mapPtCl->at(i).y = mp->Y();
+		mapPtCl->at(i).z = mp->Z();
+		i++;
+	}
+
+	return mapPtCl;
+}
+
+

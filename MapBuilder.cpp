@@ -13,6 +13,7 @@
 #include "INIReader.h"
 #include "KeyFrame.h"
 #include "MapBuilder.h"
+#include "optimizer.h"
 
 
 using namespace std;
@@ -70,6 +71,7 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
 	cv::Ptr<cv::ORB> featureDetector = cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
 	cv::Ptr<cv::BFMatcher> bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
+
 	cMap = new VMap(mask, featureDetector, bfMatch);
 	cMap->setCameraParameters(cparams);
 
@@ -81,16 +83,12 @@ MapBuilder::~MapBuilder()
 { }
 
 
-//void MapBuilder::buildKeyFrames ()
-//{
-//	for (auto &dataItem: dataset) {
-//		KeyFrame *newkf = new KeyFrame(dataItem.imagePath,
-//			dataItem.position, dataItem.orientation,
-//			mask,
-//			featureDetector, &cparams);
-//		frameList.push_back(newkf);
-//	}
-//}
+void MapBuilder::buildKeyFrames ()
+{
+	for (auto &dataItem: dataset) {
+		createFrame(dataItem);
+	}
+}
 
 
 KeyFrame* MapBuilder::createFrame (const DataItem &di)
@@ -116,17 +114,23 @@ bool MapBuilder::run ()
 		cMap->estimateStructure(anchor->getId(), ckey->getId());
 
 		anchor = ckey;
+
+		cout << i << '/' << dataset.size() << endl;
 	}
+
+	cout << "Bundling..." << endl;
+	bundle_adjustment(cMap);
 
 	return true;
 }
 
 
-//void MapBuilder::dump (const std::string &filename)
-//{
-//	pointCloudPtr vizCloud = dumpPointCloud();
-//	pcl::io::savePCDFileBinary(filename, *vizCloud);
-//}
+void MapBuilder::dump (const std::string &filename)
+{
+	pcl::PointCloud<pcl::PointXYZ>::Ptr vizCloud =
+		cMap->dumpPointCloudFromMapPoints();
+	pcl::io::savePCDFileBinary(filename, *vizCloud);
+}
 //
 //
 //pointCloudPtr

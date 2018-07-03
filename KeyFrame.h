@@ -87,10 +87,10 @@ public:
 
 	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
 
-	Eigen::Vector3d getPosition () const
+	Eigen::Vector3d &getPosition ()
 	{ return position; }
 
-	Eigen::Quaterniond getOrientation () const
+	Eigen::Quaterniond &getOrientation ()
 	{ return orientation; }
 
 //	void appendMapPoint (const MapPoint *mp, uint64 kptIdx);
