@@ -16,12 +16,19 @@
 #include <string>
 #include <memory>
 #include <tuple>
-
+#include <boost/serialization/serialization.hpp>
 
 #include "VMap.h"
 #include "MapPoint.h"
 #include "triangulation.h"
 
+
+namespace boost {
+namespace serialization {
+	template <class Archive>
+		void serialize (Archive & ar, KeyFrame &keyframe, const unsigned int version);
+}
+}
 
 
 //typedef std::tuple<int64, cv::Point2f, int64, cv::Point2f> FeaturePair;
@@ -37,6 +44,9 @@ struct CameraPinholeParams;
 
 class KeyFrame {
 public:
+
+	KeyFrame();
+
 	KeyFrame(const cv::Mat &imgSrc,
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
@@ -95,6 +105,12 @@ public:
 
 //	void appendMapPoint (const MapPoint *mp, uint64 kptIdx);
 
+protected:
+
+	template <class Archive>
+    friend void boost::serialization::serialize (Archive & ar, KeyFrame &keyframe, const unsigned int version);
+
+
 private:
 	kfid id;
 	cv::Mat image;
@@ -106,9 +122,9 @@ private:
 	Eigen::Vector3d normal;
 	Eigen::Matrix<double,3,4> projMatrix;
 
-	static uint64 nextId;
+	static kfid nextId;
 
-	KeyFrame* prev;
+//	KeyFrame* prev;
 };
 
 #endif /* KEYFRAME_H_ */

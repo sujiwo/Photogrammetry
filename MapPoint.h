@@ -24,6 +24,14 @@ struct KeyMapPoint {
 };
 
 
+namespace boost {
+namespace serialization {
+	template <class Archive>
+		void serialize (Archive & ar, MapPoint &mappoint, const unsigned int version);
+}
+}
+
+
 class MapPoint
 {
 public:
@@ -50,13 +58,20 @@ public:
 	mpid getId () const
 	{ return id; }
 
+protected:
+
+	template <class Archive>
+    friend void boost::serialization::serialize (Archive & ar, MapPoint &mappoint, const unsigned int version);
+
+
 private:
+
+	mpid id;
+
 	Eigen::Vector3d position;
 
 	// Best Descriptor
 	cv::Mat descriptor;
-
-	mpid id;
 
 	static mpid nextId;
 };

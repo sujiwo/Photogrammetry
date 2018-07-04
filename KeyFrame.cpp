@@ -15,6 +15,7 @@ using namespace Eigen;
 
 kfid KeyFrame::nextId = 0;
 
+
 Vector2d cv2eigen (const cv::Point2f &p)
 { return Eigen::Vector2d (p.x, p.y); }
 
@@ -34,7 +35,7 @@ KeyFrame::KeyFrame(
 
 	orientation(o),
 	position(p),
-	prev(NULL),
+//	prev(NULL),
 	id (nextId++)
 {
 	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);

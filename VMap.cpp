@@ -5,9 +5,13 @@
  *      Author: sujiwo
  */
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "VMap.h"
 #include "KeyFrame.h"
 #include "MapPoint.h"
+#include "MapObjectSerialization.h"
 
 
 
@@ -140,3 +144,57 @@ VMap::dumpPointCloudFromMapPoints ()
 }
 
 
+struct MapFileHeader {
+	uint64
+		numOfKeyFrame,
+		numOfMapPoint;
+};
+
+
+bool
+VMap::save(const string &filepath)
+{
+	MapFileHeader header;
+	header.numOfKeyFrame = keyframeInvIdx.size();
+	header.numOfMapPoint = mappointInvIdx.size();
+
+	fstream mapFileFd;
+	mapFileFd.open (filepath, fstream::out | fstream::trunc);
+	if (mapFileFd.is_open())
+		throw runtime_error("Unable to create map file");
+	mapFileFd.write((const char*)&header, sizeof(header));
+
+	boost::archive::binary_oarchive mapStore (mapFileFd);
+
+	for (auto &kfptr : keyframeInvIdx) {
+		KeyFrame *kf = kfptr.second;
+		mapStore << *kf;
+	}
+
+	for (auto &mpPtr : mappointInvIdx) {
+		MapPoint *mp = mpPtr.second;
+	}
+
+	mapStore << pointAppearances;
+	mapStore << framePoints;
+	mapStore << mask;
+
+	return true;
+}
+
+
+bool
+VMap::load(const string &filepath)
+{
+	MapFileHeader header;
+
+	fstream mapFileFd;
+	mapFileFd.open(filepath, fstream::in);
+	if (!mapFileFd.is_open())
+		throw runtime_error(string("Unable to open map file: ") + filepath);
+	mapFileFd.read((char*)&header, sizeof(header));
+
+	boost::archive::binary_iarchive mapStore (mapFileFd);
+
+	return true;
+}
