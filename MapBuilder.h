@@ -45,6 +45,9 @@ public:
 //	const CameraPinholeParamsRead& getCameraParams()
 //	{ return cparams; }
 
+	VMap* getMap()
+	{ return cMap; }
+
 	bool run ();
 
 	void dump (const std::string &filename);

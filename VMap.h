@@ -40,6 +40,8 @@ struct CameraPinholeParams {
 
 class VMap {
 public:
+
+	VMap ();
 	VMap (const cv::Mat &mask, cv::Ptr<cv::FeatureDetector> fdetect, cv::Ptr<cv::DescriptorMatcher> dmatcher);
 	virtual ~VMap();
 

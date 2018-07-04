@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <map>
 #include <exception>
@@ -10,10 +11,7 @@
 
 //#include "DataLoader.h"
 
-using std::string;
-using std::ifstream;
-using std::map;
-using std::vector;
+using namespace std;
 using namespace Eigen;
 
 
@@ -21,10 +19,10 @@ using namespace Eigen;
 
 int main (int argc, char *argv[])
 {
-	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
-	// XXX: Might need to change location
-	mapBuilder.run();
-	mapBuilder.dump("/tmp/test.pcd");
+	VMap myMap;
+	myMap.load("/home/sujiwo/maptest.map");
+
+	cout << "Done" << endl;
 
 	return 0;
 }

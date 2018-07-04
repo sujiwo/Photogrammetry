@@ -26,6 +26,10 @@ typedef Matrix4d poseMatrix4;
 #define pixelReprojectionError 6.0
 
 
+KeyFrame::KeyFrame()
+{}
+
+
 KeyFrame::KeyFrame(
 		const cv::Mat &imgSrc,
 	const Vector3d &p, const Eigen::Quaterniond &o,

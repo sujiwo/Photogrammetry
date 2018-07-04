@@ -106,7 +106,8 @@ bool MapBuilder::run ()
 	// First keyframe
 	KeyFrame *anchor = createFrame(dataset[0]);
 
-	for (int i=1; i<dataset.size(); i++) {
+	for (int i=1; i<100; i++) {
+//	for (int i=1; i<dataset.size(); i++) {
 		auto &cdi = dataset[i];
 		KeyFrame *ckey = createFrame(cdi);
 
@@ -117,9 +118,9 @@ bool MapBuilder::run ()
 
 		cout << i << '/' << dataset.size() << endl;
 	}
-
-	cout << "Bundling..." << endl;
-	bundle_adjustment(cMap);
+//
+//	cout << "Bundling..." << endl;
+//	bundle_adjustment(cMap);
 
 	return true;
 }

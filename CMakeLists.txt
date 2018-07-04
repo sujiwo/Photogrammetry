@@ -24,8 +24,7 @@ include_directories (
 #	${THEIA_INCLUDE_DIRS}
 )
 
-add_executable (photogram
-	main.cpp
+set(SOURCE_FILES
 	VMap.cpp
 	MapBuilder.cpp
 	KeyFrame.cpp
@@ -34,11 +33,27 @@ add_executable (photogram
 	optimizer.cpp
 )
 
-target_link_libraries (
-	photogram
+set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	g2o
 #	${THEIA_LIBRARIES}
 )
 
+add_executable (map_test
+	map_test.cpp
+	${SOURCE_FILES}
+)
+
+target_link_libraries (map_test
+	${REQUIRED_LIBS}
+)
+
+add_executable(map_load
+	map_load.cpp
+	${SOURCE_FILES}
+)
+
+target_link_libraries(map_load
+	${REQUIRED_LIBS}
+)

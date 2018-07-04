@@ -19,6 +19,10 @@ using namespace Eigen;
 using namespace std;
 
 
+VMap::VMap()
+{ }
+
+
 VMap::VMap(
 	const cv::Mat &m,
 	cv::Ptr<cv::FeatureDetector> fdetect,
@@ -160,7 +164,7 @@ VMap::save(const string &filepath)
 
 	fstream mapFileFd;
 	mapFileFd.open (filepath, fstream::out | fstream::trunc);
-	if (mapFileFd.is_open())
+	if (!mapFileFd.is_open())
 		throw runtime_error("Unable to create map file");
 	mapFileFd.write((const char*)&header, sizeof(header));
 
@@ -173,6 +177,7 @@ VMap::save(const string &filepath)
 
 	for (auto &mpPtr : mappointInvIdx) {
 		MapPoint *mp = mpPtr.second;
+		mapStore << *mp;
 	}
 
 	mapStore << pointAppearances;
@@ -196,5 +201,34 @@ VMap::load(const string &filepath)
 
 	boost::archive::binary_iarchive mapStore (mapFileFd);
 
+	KeyFrame *kfArray = new KeyFrame[header.numOfKeyFrame];
+	MapPoint *mpArray = new MapPoint[header.numOfMapPoint];
+
+	for (int i=0; i<header.numOfKeyFrame; i++) {
+		mapStore >> kfArray[i];
+	}
+	for (int j=0; j<header.numOfMapPoint; j++) {
+		mapStore >> mpArray[j];
+	}
+
+	mapStore >> pointAppearances;
+	mapStore >> framePoints;
+	mapStore >> mask;
+
+	// Rebuild pointers
+	keyframeInvIdx.clear();
+	for (int i=0; i<header.numOfKeyFrame; i++) {
+		KeyFrame *kf = &(kfArray[i]);
+		keyframeInvIdx.insert(pair<kfid,KeyFrame*>(kf->getId(), kf));
+	}
+
+	mappointInvIdx.clear();
+	for (int j=0; j<header.numOfMapPoint; j++) {
+		MapPoint *mp = &(mpArray[j]);
+		mappointInvIdx.insert(pair<mpid,MapPoint*>(mp->getId(), mp));
+	}
+
 	return true;
 }
+
+

@@ -15,12 +15,14 @@ using namespace Eigen;
 mpid MapPoint::nextId = 0;
 
 
+MapPoint::MapPoint()
+{}
+
+
 MapPoint::MapPoint(const Vector3d &p) :
 	position(p),
 	id(nextId++)
-{
-
-}
+{}
 
 MapPoint::~MapPoint() {}
 

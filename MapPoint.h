@@ -35,6 +35,8 @@ namespace serialization {
 class MapPoint
 {
 public:
+
+	MapPoint();
 	MapPoint(const Eigen::Vector3d &p);
 	virtual ~MapPoint();
 
