@@ -101,13 +101,15 @@ KeyFrame* MapBuilder::createFrame (const DataItem &di)
 }
 
 
-bool MapBuilder::run ()
+bool MapBuilder::run (int maxKeyframes)
 {
 	// First keyframe
 	KeyFrame *anchor = createFrame(dataset[0]);
 
-	for (int i=1; i<100; i++) {
-//	for (int i=1; i<dataset.size(); i++) {
+	if (maxKeyframes==0)
+		maxKeyframes = dataset.size();
+
+	for (int i=1; i<maxKeyframes; i++) {
 		auto &cdi = dataset[i];
 		KeyFrame *ckey = createFrame(cdi);
 

@@ -48,7 +48,7 @@ public:
 	VMap* getMap()
 	{ return cMap; }
 
-	bool run ();
+	bool run (int maxKeyframes=0);
 
 	void dump (const std::string &filename);
 

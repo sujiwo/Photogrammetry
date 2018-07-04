@@ -41,8 +41,12 @@ void bundle_adjustment (VMap *orgMap)
 	vector<kfid> keyframeList = orgMap->allKeyFrames();
 	vector<mpid> mappointList = orgMap->allMapPoints();
 
-	g2o::SparseOptimizer optimizer;
-	g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType> linearSolver;
+    g2o::SparseOptimizer optimizer;
+    g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
+    linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>();
+    g2o::BlockSolver_6_3 * solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    optimizer.setAlgorithm(solver);
 
 	map<oid, kfid> vertexKfMap;
 	map<kfid, g2o::VertexSE3Expmap*> vertexKfMapInv;
@@ -72,11 +76,16 @@ void bundle_adjustment (VMap *orgMap)
 		optimizer.addVertex(vMp);
 		vertexMpMap.insert(pair<oid, mpid> (vId, mid));
 		vertexMpMapInv[mid] = vMp;
+		vId ++;
 
 		// Edges
 		for (auto &kfIds: orgMap->getRelatedKeyFrames(mid)) {
 
 			// Get map point's projection in this particular keyframe
+//			KeyFrame *rkf = orgMap->keyframe(kfIds);
+//			map<mpid,kpid> &listKpt = orgMap->allMapPointsAtKeyFrame(kfIds);
+//			oid ekpid = orgMap->getKeyPointId(kfIds, mid);
+//			cv::Point2f p2D = rkf->getKeyPointAt(ekpid).pt;
 			cv::Point2f p2D = orgMap->keyframe(kfIds)
 				->getKeyPointAt(orgMap
 					->getKeyPointId(kfIds, mid))

@@ -91,8 +91,11 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 	vector<FeaturePair> featurePairs_1_2;
 	KeyFrame::match(*kf1, *kf2, descriptorMatcher, featurePairs_1_2);
 
-	framePoints[kfid1] = map<mpid, kpid>();
-	framePoints[kfid2] = map<mpid, kpid>();
+//	framePoints[kfid1] = map<mpid, kpid>();
+//	framePoints[kfid2] = map<mpid, kpid>();
+
+	std::map<mpid, kpid> &kf1kp = framePoints[kfid1];
+	std::map<mpid, kpid> &kf2kp = framePoints[kfid2];
 
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, featurePairs_1_2,

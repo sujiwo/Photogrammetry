@@ -5,6 +5,7 @@
 #include "INIReader.h"
 #include "KeyFrame.h"
 #include "MapBuilder.h"
+#include "optimizer.h"
 
 
 
@@ -23,7 +24,8 @@ int main (int argc, char *argv[])
 {
 	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
-	mapBuilder.run();
+	mapBuilder.run(10);
+	bundle_adjustment(mapBuilder.getMap());
 	mapBuilder.getMap()->save("/home/sujiwo/maptest.map");
 	std::cout << "Done" << std::endl;
 

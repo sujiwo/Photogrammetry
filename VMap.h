@@ -38,6 +38,17 @@ struct CameraPinholeParams {
 };
 
 
+enum FeatureDetectorT {
+	ORB,
+	SIFT,
+	AKAZE
+};
+
+enum DescriptorMatcherT {
+	BruteForce
+};
+
+
 class VMap {
 public:
 
@@ -81,6 +92,9 @@ public:
 
 	inline kpid getKeyPointId (const kfid k, const mpid p)
 	{ return framePoints.at(k).at(p); }
+
+	inline std::map<mpid,kpid> &allMapPointsAtKeyFrame(const kfid f)
+	{ return framePoints.at(f); }
 
 	bool save (const std::string &path);
 	bool load (const std::string &path);
