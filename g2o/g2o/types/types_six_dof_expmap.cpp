@@ -49,8 +49,123 @@ Vector3d unproject2d(const Vector2d& v)  {
   return res;
 }
 
+
+CameraParameters::CameraParameters() :
+	focal_length(1.),
+	principle_point(Vector2d::Zero()),
+	baseline(0.5)
+{}
+
+
+Vector2d
+CameraParameters::cam_map (const Vector3d &trans_xyz) const
+{
+	Vector2d proj = project2d(trans_xyz);
+	Vector2d res;
+	res[0] = proj[0]*focal_length + principle_point[0];
+	res[1] = proj[1]*focal_length + principle_point[1];
+	return res;
+}
+
+
+Vector3d
+CameraParameters::stereocam_uvu_map(const Vector3d & trans_xyz) const
+{
+	Vector2d uv_left = cam_map(trans_xyz);
+	double proj_x_right = (trans_xyz[0]-baseline)/trans_xyz[2];
+	double u_right = proj_x_right*focal_length + principle_point[0];
+	return Vector3d(uv_left[0],uv_left[1],u_right);
+}
+
+
+EdgeProjectXYZ2UV::EdgeProjectXYZ2UV() :
+	BaseBinaryEdge<2, Vector2d, VertexSBAPointXYZ, VertexSE3Expmap>()
+{
+	_cam = NULL;
+	resizeParameters(1);
+	installParameter(_cam, 0);
+}
+
+
+bool EdgeProjectXYZ2UV::read(std::istream& is)
+{
+  int paramId;
+  is >> paramId;
+  setParameterId(0, paramId);
+
+  for (int i=0; i<2; i++){
+    is >> _measurement[i];
+  }
+  for (int i=0; i<2; i++)
+    for (int j=i; j<2; j++) {
+      is >> information()(i,j);
+      if (i!=j)
+        information()(j,i)=information()(i,j);
+    }
+  return true;
+}
+
+
+bool EdgeProjectXYZ2UV::write(std::ostream& os) const
+{
+  os << _cam->id() << " ";
+  for (int i=0; i<2; i++){
+    os << measurement()[i] << " ";
+  }
+
+  for (int i=0; i<2; i++)
+    for (int j=i; j<2; j++){
+      os << " " <<  information()(i,j);
+    }
+  return os.good();
+}
+
+
+void EdgeProjectXYZ2UV::linearizeOplus()
+{
+	VertexSE3Expmap * vj = static_cast<VertexSE3Expmap *>(_vertices[1]);
+	SE3Quat T(vj->estimate());
+	VertexSBAPointXYZ* vi = static_cast<VertexSBAPointXYZ*>(_vertices[0]);
+	Vector3d xyz = vi->estimate();
+	Vector3d xyz_trans = T.map(xyz);
+
+	double x = xyz_trans[0];
+	double y = xyz_trans[1];
+	double z = xyz_trans[2];
+	double z_2 = z*z;
+
+	const CameraParameters * cam = static_cast<const CameraParameters *>(parameter(0));
+
+	Matrix<double,2,3,Eigen::ColMajor> tmp;
+	tmp(0,0) = cam->focal_length;
+	tmp(0,1) = 0;
+	tmp(0,2) = -x/z*cam->focal_length;
+
+	tmp(1,0) = 0;
+	tmp(1,1) = cam->focal_length;
+	tmp(1,2) = -y/z*cam->focal_length;
+
+	_jacobianOplusXi =  -1./z * tmp * T.rotation().toRotationMatrix();
+
+	_jacobianOplusXj(0,0) =  x*y/z_2 *cam->focal_length;
+	_jacobianOplusXj(0,1) = -(1+(x*x/z_2)) *cam->focal_length;
+	_jacobianOplusXj(0,2) = y/z *cam->focal_length;
+	_jacobianOplusXj(0,3) = -1./z *cam->focal_length;
+	_jacobianOplusXj(0,4) = 0;
+	_jacobianOplusXj(0,5) = x/z_2 *cam->focal_length;
+
+	_jacobianOplusXj(1,0) = (1+y*y/z_2) *cam->focal_length;
+	_jacobianOplusXj(1,1) = -x*y/z_2 *cam->focal_length;
+	_jacobianOplusXj(1,2) = -x/z *cam->focal_length;
+	_jacobianOplusXj(1,3) = 0;
+	_jacobianOplusXj(1,4) = -1./z *cam->focal_length;
+	_jacobianOplusXj(1,5) = y/z_2 *cam->focal_length;
+}
+
+
 VertexSE3Expmap::VertexSE3Expmap() : BaseVertex<6, SE3Quat>() {
 }
+
 
 bool VertexSE3Expmap::read(std::istream& is) {
   Vector7d est;

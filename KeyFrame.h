@@ -103,7 +103,6 @@ public:
 	Eigen::Quaterniond &getOrientation ()
 	{ return orientation; }
 
-//	void appendMapPoint (const MapPoint *mp, uint64 kptIdx);
 
 protected:
 

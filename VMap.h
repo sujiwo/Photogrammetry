@@ -99,6 +99,9 @@ public:
 	bool save (const std::string &path);
 	bool load (const std::string &path);
 
+	std::vector<std::pair<Eigen::Vector3d,Eigen::Quaterniond> >
+		dumpCameraPoses () const;
+
 protected:
 	cv::Mat vocabulary;
 

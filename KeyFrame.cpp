@@ -152,7 +152,6 @@ void KeyFrame::triangulate (
 }
 
 
-
 Vector2d KeyFrame::project(const Vector3d &pt3) const
 {
 	Vector3d ptx = projMatrix * pt3.homogeneous();

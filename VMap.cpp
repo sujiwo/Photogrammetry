@@ -235,3 +235,17 @@ VMap::load(const string &filepath)
 }
 
 
+vector<pair<Vector3d,Quaterniond> >
+VMap::dumpCameraPoses () const
+{
+	vector<pair<Vector3d,Quaterniond> > Retr;
+
+	for (auto &kptr: keyframeInvIdx) {
+		KeyFrame *kf = kptr.second;
+		Retr.push_back(
+			pair<Vector3d,Quaterniond>
+				(kf->getPosition(), kf->getOrientation()));
+	}
+
+	return Retr;
+}

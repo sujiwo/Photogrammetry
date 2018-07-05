@@ -22,6 +22,9 @@ using namespace Eigen;
 
 typedef uint64 oid;
 
+const float thHuber2D = sqrt(5.99);
+const float thHuber3D = sqrt(7.815);
+
 
 g2o::SE3Quat toSE3Quat
 (const Eigen::Vector3d &position, const Eigen::Quaterniond &orientation)
@@ -48,6 +51,12 @@ void bundle_adjustment (VMap *orgMap)
     g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
     optimizer.setAlgorithm(solver);
 
+    const CameraPinholeParams camPtr = orgMap->getCameraParameters();
+    g2o::CameraParameters *camParams =
+    	new g2o::CameraParameters(camPtr.fx, Vector2d(camPtr.cx,camPtr.cy), 0);
+    camParams->setId(0);
+    optimizer.addParameter(camParams);
+
 	map<oid, kfid> vertexKfMap;
 	map<kfid, g2o::VertexSE3Expmap*> vertexKfMapInv;
 	map<oid, mpid> vertexMpMap;
@@ -60,6 +69,7 @@ void bundle_adjustment (VMap *orgMap)
 		KeyFrame *kf = orgMap->keyframe(kId);
 		vKf->setEstimate (toSE3Quat(kf->getPosition(), kf->getOrientation()));
 		vKf->setId(vId);
+		vKf->setFixed(kId==0);
 		optimizer.addVertex(vKf);
 		vertexKfMap.insert(pair<oid, kfid> (vId, kId));
 		vertexKfMapInv[kId] = vKf;
@@ -82,26 +92,22 @@ void bundle_adjustment (VMap *orgMap)
 		for (auto &kfIds: orgMap->getRelatedKeyFrames(mid)) {
 
 			// Get map point's projection in this particular keyframe
-//			KeyFrame *rkf = orgMap->keyframe(kfIds);
-//			map<mpid,kpid> &listKpt = orgMap->allMapPointsAtKeyFrame(kfIds);
-//			oid ekpid = orgMap->getKeyPointId(kfIds, mid);
-//			cv::Point2f p2D = rkf->getKeyPointAt(ekpid).pt;
 			cv::Point2f p2D = orgMap->keyframe(kfIds)
 				->getKeyPointAt(orgMap
 					->getKeyPointId(kfIds, mid))
 						.pt;
 
-			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
+			g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
 			edge->setVertex(0, vMp);
 			edge->setVertex(1, vertexKfMapInv[kfIds]);
 			edge->setMeasurement(Vector2d(p2D.x, p2D.y));
 			// XXX: Doubtful
-			edge->setInformation(Matrix2d::Identity());
+			edge->setInformation(Matrix2d::Identity()*5);
+			edge->setParameterId(0,0);
 
-			edge->fx = orgMap->getCameraParameters().fx;
-			edge->fy = orgMap->getCameraParameters().fy;
-			edge->cx = orgMap->getCameraParameters().cx;
-			edge->cy = orgMap->getCameraParameters().cy;
+//			g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+//			edge->setRobustKernel(rk);
+//			rk->setDelta(thHuber2D);
 
 			optimizer.addEdge(edge);
 		}
