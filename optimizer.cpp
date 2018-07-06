@@ -69,7 +69,7 @@ void bundle_adjustment (VMap *orgMap)
 		KeyFrame *kf = orgMap->keyframe(kId);
 		vKf->setEstimate (toSE3Quat(kf->getPosition(), kf->getOrientation()));
 		vKf->setId(vId);
-		vKf->setFixed(kId==0);
+		vKf->setFixed(kId<2);
 		optimizer.addVertex(vKf);
 		vertexKfMap.insert(pair<oid, kfid> (vId, kId));
 		vertexKfMapInv[kId] = vKf;
