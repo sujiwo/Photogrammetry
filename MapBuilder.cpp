@@ -103,7 +103,6 @@ KeyFrame* MapBuilder::createFrame (const DataItem &di)
 
 bool MapBuilder::run (int maxKeyframes)
 {
-	// First keyframe
 	KeyFrame *anchor = createFrame(dataset[0]);
 
 	if (maxKeyframes==0)
@@ -120,9 +119,23 @@ bool MapBuilder::run (int maxKeyframes)
 
 		cout << i << '/' << dataset.size() << endl;
 	}
-//
-//	cout << "Bundling..." << endl;
-//	bundle_adjustment(cMap);
+
+	return true;
+}
+
+
+bool MapBuilder::run2 (int maxKeyframes)
+{
+	buildKeyFrames();
+	vector<kfid> kfList = cMap->getKeyFrameList();
+
+	// Initialize map
+	cMap->estimateStructure(kfList[0], kfList[1]);
+	kfid anchor = 1;
+
+	for (int i=2; i<maxKeyframes; i++) {
+
+	}
 
 	return true;
 }

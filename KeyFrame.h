@@ -74,6 +74,13 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
+	void matchSubset (
+		const KeyFrame &k1, const KeyFrame &k2,
+		const std::set<kpid> &kpListInKf1,
+		cv::Ptr<cv::DescriptorMatcher> matcher,
+		std::vector<FeaturePair> &featurePairs
+	);
+
 	static void triangulate (
 		const KeyFrame *kf1, const KeyFrame *kf2,
 		std::vector<kfid> &mapPointList,

@@ -91,9 +91,6 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 	vector<FeaturePair> featurePairs_1_2;
 	KeyFrame::match(*kf1, *kf2, descriptorMatcher, featurePairs_1_2);
 
-//	framePoints[kfid1] = map<mpid, kpid>();
-//	framePoints[kfid2] = map<mpid, kpid>();
-
 	std::map<mpid, kpid> &kf1kp = framePoints[kfid1];
 	std::map<mpid, kpid> &kf2kp = framePoints[kfid2];
 
@@ -107,6 +104,18 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 		pointAppearances[mpidx].insert(kfid1);
 		pointAppearances[mpidx].insert(kfid2);
 	}
+}
+
+
+void
+VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
+{
+	const KeyFrame
+		*kf1 = getKeyFrameById(kfid1),
+		*kf2 = getKeyFrameById(kfid2);
+
+	// Track Map Points from KF1 that are visible in KF2
+	map<mpid,kpid> &kf1kp = framePoints[kfid1];
 }
 
 
@@ -248,4 +257,24 @@ VMap::dumpCameraPoses () const
 	}
 
 	return Retr;
+}
+
+
+vector<kfid>
+VMap::getKeyFrameList() const
+{
+	vector<kfid> ret;
+	for (auto &kf: keyframeInvIdx)
+		ret.push_back(kf.first);
+	return ret;
+}
+
+
+std::vector<mpid>
+VMap::getMapPointList() const
+{
+	vector<mpid> ret;
+	for (auto &mp: mappointInvIdx)
+		ret.push_back(mp.first);
+	return ret;
 }

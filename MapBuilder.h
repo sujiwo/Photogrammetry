@@ -49,6 +49,7 @@ public:
 	{ return cMap; }
 
 	bool run (int maxKeyframes=0);
+	bool run2 (int maxKeyframes=0);
 
 	void dump (const std::string &filename);
 

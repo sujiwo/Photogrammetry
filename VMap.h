@@ -76,6 +76,9 @@ public:
 	KeyFrame* getKeyFrameById (const kfid &i) const;
 	MapPoint* getMapPointById (const mpid &i) const;
 
+	std::vector<kfid> getKeyFrameList() const;
+	std::vector<mpid> getMapPointList() const;
+
 	KeyFrame* keyframe (const kfid &i)
 	{ return keyframeInvIdx.at(i); }
 
@@ -83,6 +86,8 @@ public:
 	{ return mappointInvIdx.at(i); }
 
 	void estimateStructure (const kfid &keyFrame1, const kfid &keyFrame2);
+
+	void estimateAndTrack (const kfid &kfid1, const kfid &kfid2);
 
 	std::vector<kfid> allKeyFrames () const;
 	std::vector<mpid> allMapPoints () const;

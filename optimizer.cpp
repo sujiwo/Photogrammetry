@@ -100,9 +100,16 @@ void bundle_adjustment (VMap *orgMap)
 			g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
 			edge->setVertex(0, vMp);
 			edge->setVertex(1, vertexKfMapInv[kfIds]);
-			edge->setMeasurement(Vector2d(p2D.x, p2D.y));
+			Vector2d m(p2D.x, p2D.y);
+			edge->setMeasurement(m);
+
 			// XXX: Doubtful
-			edge->setInformation(Matrix2d::Identity()*5);
+			Matrix2d uncertainty = Matrix2d::Identity();
+			Vector2d prj = orgMap->keyframe(kfIds)->project(mp->getPosition());
+			uncertainty.diagonal() = Vector2d(pow(prj[0]-m[0],2),
+				pow(prj[1]-m[1], 2));
+
+			edge->setInformation(uncertainty);
 			edge->setParameterId(0,0);
 
 //			g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;

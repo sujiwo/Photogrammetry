@@ -60,6 +60,7 @@ int main (int argc, char *argv[])
 	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
 	mapBuilder.run(10);
+	mapBuilder.dump("/tmp/test_nba.pcd");
 	bundle_adjustment(mapBuilder.getMap());
 	saveCameraPoses(mapBuilder.getMap(), "/tmp/test_nba.txt");
 //	mapBuilder.getMap()->save("/home/sujiwo/maptest.map");
