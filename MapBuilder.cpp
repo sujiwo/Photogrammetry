@@ -131,10 +131,9 @@ bool MapBuilder::run2 (int maxKeyframes)
 
 	// Initialize map
 	cMap->estimateStructure(kfList[0], kfList[1]);
-	kfid anchor = 1;
 
 	for (int i=2; i<maxKeyframes; i++) {
-
+		cMap->estimateAndTrack(kfList[i-1], kfList[i]);
 	}
 
 	return true;

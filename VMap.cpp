@@ -12,6 +12,7 @@
 #include "KeyFrame.h"
 #include "MapPoint.h"
 #include "MapObjectSerialization.h"
+#include "utilities.h"
 
 
 
@@ -115,7 +116,35 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 		*kf2 = getKeyFrameById(kfid2);
 
 	// Track Map Points from KF1 that are visible in KF2
-	map<mpid,kpid> &kf1kp = framePoints[kfid1];
+	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
+	set<kpid> kp1s = allKeys(kf1kp2mp);
+	vector<FeaturePair> pairList12;
+	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1s);
+	if (pairList12.size() > 0) {
+		for (auto &p: pairList12) {
+			mpid ptId = kf1kp2mp[p.kpid1];
+			// This particular mappoint is visible in KF2
+			pointAppearances[ptId].insert(kfid2);
+			framePoints[kfid2][ptId] = p.kpid2;
+		}
+	}
+
+	// Estimate new mappoints that are visible in KF1 & KF2
+	set<kpid> kp1rest = subtract(KeyFrame::allKeyPointId(*kf1), kp1s);
+	set<kpid> kp2s = allKeys(reverseMap(framePoints[kfid2]));
+	set<kpid> kp2rest = subtract(KeyFrame::allKeyPointId(*kf2), kp2s);
+	pairList12.clear();
+	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1rest, kp2rest);
+	vector<mpid> newMapPointList;
+	KeyFrame::triangulate(kf1, kf2, newMapPointList, pairList12,
+		framePoints[kfid1], framePoints[kfid2],
+		this);
+
+	// Update visibility information
+	for (mpid &mpidx: newMapPointList) {
+		pointAppearances[mpidx].insert(kfid1);
+		pointAppearances[mpidx].insert(kfid2);
+	}
 }
 
 

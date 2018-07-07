@@ -74,11 +74,12 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
-	void matchSubset (
+	static void matchSubset (
 		const KeyFrame &k1, const KeyFrame &k2,
-		const std::set<kpid> &kpListInKf1,
 		cv::Ptr<cv::DescriptorMatcher> matcher,
-		std::vector<FeaturePair> &featurePairs
+		std::vector<FeaturePair> &featurePairs,
+		std::set<kpid> kpListInKf1=std::set<kpid>(),
+		std::set<kpid> kpListInKf2=std::set<kpid>()
 	);
 
 	static void triangulate (
@@ -110,6 +111,7 @@ public:
 	Eigen::Quaterniond &getOrientation ()
 	{ return orientation; }
 
+	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
 protected:
 

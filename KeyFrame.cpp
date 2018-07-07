@@ -8,6 +8,8 @@
 #include "KeyFrame.h"
 #include <exception>
 #include "MapBuilder.h"
+#include "utilities.h"
+
 
 using namespace std;
 using namespace Eigen;
@@ -24,6 +26,16 @@ typedef Matrix4d poseMatrix4;
 
 
 #define pixelReprojectionError 6.0
+
+
+std::set<kpid>
+KeyFrame::allKeyPointId (const KeyFrame &kf)
+{
+	std::set<kpid> allkp;
+	for (kpid i=0; i<kf.keypoints.size(); i++)
+		allkp.insert(i);
+	return allkp;
+}
 
 
 KeyFrame::KeyFrame()
@@ -96,17 +108,22 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 
 void KeyFrame::matchSubset (
 	const KeyFrame &k1, const KeyFrame &k2,
-	const set<kpid> &kpListInKf1,
 	cv::Ptr<cv::DescriptorMatcher> matcher,
-	vector<FeaturePair> &featurePairs)
+	vector<FeaturePair> &featurePairs,
+	set<kpid> kpListInKf1,
+	set<kpid> kpListInKf2)
 {
+	if (kpListInKf1.size()==0)
+		kpListInKf1 = allKeyPointId(k1);
+	if (kpListInKf2.size()==0)
+		kpListInKf2 = allKeyPointId(k2);
+
 	vector<cv::DMatch> k12matches;
 	cv::Mat mask = cv::Mat::zeros(k2.keypoints.size(), k1.keypoints.size(), CV_8U);
 	for (int i=0; i<k2.keypoints.size(); i++) {
 		for (int j=0; j<k1.keypoints.size(); i++) {
-			if (kpListInKf1.find((kpid)j) != kpListInKf1.end()) {
+			if (inSet(kpListInKf2, (kpid)i) and inSet(kpListInKf1, (kpid)j))
 				mask.at<char>(i,j) = 1;
-			}
 		}
 	}
 	matcher->match(k2.descriptors, k1.descriptors, k12matches);
