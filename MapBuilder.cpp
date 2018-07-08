@@ -83,10 +83,13 @@ MapBuilder::~MapBuilder()
 { }
 
 
-void MapBuilder::buildKeyFrames ()
+void MapBuilder::buildKeyFrames (int maxNumOfFrames)
 {
-	for (auto &dataItem: dataset) {
-		createFrame(dataItem);
+	if (maxNumOfFrames==0)
+		maxNumOfFrames = dataset.size();
+
+	for (uint i=0; i<maxNumOfFrames; i++) {
+		createFrame(dataset[i]);
 	}
 }
 
@@ -126,7 +129,7 @@ bool MapBuilder::run (int maxKeyframes)
 
 bool MapBuilder::run2 (int maxKeyframes)
 {
-	buildKeyFrames();
+	buildKeyFrames(maxKeyframes);
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
@@ -134,6 +137,7 @@ bool MapBuilder::run2 (int maxKeyframes)
 
 	for (int i=2; i<maxKeyframes; i++) {
 		cMap->estimateAndTrack(kfList[i-1], kfList[i]);
+		cout << i << '/' << dataset.size() << endl;
 	}
 
 	return true;

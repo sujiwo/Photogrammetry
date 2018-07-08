@@ -71,7 +71,7 @@ private:
 //	vector<KeyFrame*> frameList;
 //	vector<MapPoint*> pointList;
 
-	void buildKeyFrames();
+	void buildKeyFrames(int maxNumOfFrames=0);
 
 	cv::Mat vocabulary;
 	void trainVocabulary ();
