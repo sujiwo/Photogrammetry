@@ -107,43 +107,6 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 }
 
 
-//void KeyFrame::matchSubset (
-//	const KeyFrame &k1, const KeyFrame &k2,
-//	cv::Ptr<cv::DescriptorMatcher> matcher,
-//	vector<FeaturePair> &featurePairs,
-//	set<kpid> kpListInKf1,
-//	set<kpid> kpListInKf2)
-//{
-//	cv::Mat mask;
-//	if (kpListInKf1.size()==0 and kpListInKf2.size()==0) {
-//		mask = cv::Mat::ones(k2.keypoints.size(), k1.keypoints.size(), CV_8U);
-//	}
-//	else {
-//		if (kpListInKf1.size()==0)
-//			kpListInKf1 = allKeyPointId(k1);
-//		if (kpListInKf2.size()==0)
-//			kpListInKf2 = allKeyPointId(k2);
-//
-//		mask = cv::Mat::zeros(k2.keypoints.size(), k1.keypoints.size(), CV_8U);
-//		for (kpid i=0; i<k2.keypoints.size(); i++) {
-//			for (kpid j=0; j<k1.keypoints.size(); j++) {
-//				if (inSet(kpListInKf2, i) and inSet(kpListInKf1, j))
-//					mask.at<char>(i,j) = 1;
-//			}
-//		}
-//	}
-//	vector<cv::DMatch> k12matches;
-//	matcher->match(k2.descriptors, k1.descriptors, k12matches, mask);
-//
-//	for (auto &m: k12matches) {
-//		if (m.trainIdx < k1.keypoints.size() and m.queryIdx < k2.keypoints.size()) {
-//			FeaturePair fp = {m.trainIdx, k1.keypoints[m.trainIdx].pt, m.queryIdx, k2.keypoints[m.queryIdx].pt};
-//			featurePairs.push_back (fp);
-//		}
-//	}
-//}
-
-
 void KeyFrame::matchSubset (
 	const KeyFrame &k1, const KeyFrame &k2,
 	cv::Ptr<cv::DescriptorMatcher> matcher,
@@ -173,8 +136,7 @@ void KeyFrame::triangulate (
 	const std::vector<FeaturePair> &featurePairs,
 	std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame1,
 	std::map<mpid, kpid> &mapPointToKeyPointInKeyFrame2,
-	VMap *parent
-)
+	VMap *parent)
 {
 	set<uint> badMatches;
 

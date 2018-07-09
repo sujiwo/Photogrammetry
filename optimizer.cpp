@@ -92,10 +92,10 @@ void bundle_adjustment (VMap *orgMap)
 		for (auto &kfIds: orgMap->getRelatedKeyFrames(mid)) {
 
 			// Get map point's projection in this particular keyframe
-			cv::Point2f p2D = orgMap->keyframe(kfIds)
+			cv::KeyPoint p2K = orgMap->keyframe(kfIds)
 				->getKeyPointAt(orgMap
-					->getKeyPointId(kfIds, mid))
-						.pt;
+					->getKeyPointId(kfIds, mid));
+			cv::Point2f p2D = p2K.pt;
 
 			g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
 			edge->setVertex(0, vMp);
@@ -104,10 +104,10 @@ void bundle_adjustment (VMap *orgMap)
 			edge->setMeasurement(m);
 
 			// XXX: Doubtful
-			Matrix2d uncertainty = Matrix2d::Identity();
-			Vector2d prj = orgMap->keyframe(kfIds)->project(mp->getPosition());
-			uncertainty.diagonal() = Vector2d(pow(prj[0]-m[0],2),
-				pow(prj[1]-m[1], 2));
+			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
+//			Vector2d prj = orgMap->keyframe(kfIds)->project(mp->getPosition());
+//			uncertainty.diagonal() = Vector2d(pow(prj[0]-m[0],2),
+//				pow(prj[1]-m[1], 2));
 
 			edge->setInformation(uncertainty);
 			edge->setParameterId(0,0);
