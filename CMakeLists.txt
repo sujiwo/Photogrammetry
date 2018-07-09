@@ -8,6 +8,7 @@ find_package (Boost REQUIRED)
 find_package (OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
+find_package(OpenMP REQUIRED)
 
 #find_package (Theia REQUIRED)
 set (gflags_LIBRARIES gflags)

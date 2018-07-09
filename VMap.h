@@ -49,8 +49,20 @@ enum DescriptorMatcherT {
 };
 
 
-typedef std::vector<bool>
-	kpidField;
+struct kpidField : std::vector<bool>
+{
+	kpidField() : std::vector<bool>() {};
+
+	kpidField(const int sz, const bool init=false):
+		std::vector<bool> (sz, init) {}
+
+	void invert();
+
+	uint countPositive() const;
+
+	// A Mask is used to compare keypoints in 1 against 2
+	static cv::Mat createMask (const kpidField &fld1, const kpidField &fld2);
+};
 
 
 class VMap {
@@ -110,6 +122,11 @@ public:
 
 	std::vector<std::pair<Eigen::Vector3d,Eigen::Quaterniond> >
 		dumpCameraPoses () const;
+
+//	kpidField makeField (const std::vector<kpid> &kpIds);
+	kpidField makeField (const kfid &kf);
+	kpidField visibleField (const kfid &kf);
+
 
 protected:
 	cv::Mat vocabulary;

@@ -116,10 +116,11 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 		*kf2 = getKeyFrameById(kfid2);
 
 	// Track Map Points from KF1 that are visible in KF2
-	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
-	set<kpid> kp1s = allKeys(kf1kp2mp);
+	kpidField kp1List = visibleField(kfid1);
+	kpidField allKp2 = makeField(kfid2);
 	vector<FeaturePair> pairList12;
-	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1s);
+	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
+	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
 	if (pairList12.size() > 0) {
 		for (auto &p: pairList12) {
 			mpid ptId = kf1kp2mp[p.kpid1];
@@ -130,11 +131,11 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	}
 
 	// Estimate new mappoints that are visible in KF1 & KF2
-	set<kpid> kp1rest = subtract(KeyFrame::allKeyPointId(*kf1), kp1s);
-	set<kpid> kp2s = allKeys(reverseMap(framePoints[kfid2]));
-	set<kpid> kp2rest = subtract(KeyFrame::allKeyPointId(*kf2), kp2s);
+	kp1List.invert();
+	kpidField kp2List = visibleField(kfid2);
+	kp2List.invert();
 	pairList12.clear();
-	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1rest, kp2rest);
+	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, kp2List);
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, pairList12,
 		framePoints[kfid1], framePoints[kfid2],
@@ -306,4 +307,58 @@ VMap::getMapPointList() const
 	for (auto &mp: mappointInvIdx)
 		ret.push_back(mp.first);
 	return ret;
+}
+
+
+kpidField
+VMap::makeField (const kfid &kf)
+{
+	return kpidField (keyframe(kf)->numOfKeyPoints(), true);
+}
+
+
+kpidField
+VMap::visibleField (const kfid &kf)
+{
+	kpidField field(keyframe(kf)->numOfKeyPoints(), false);
+	for (auto &pt: framePoints[kf]) {
+		const kpid &i = pt.second;
+		field[(int)i] = true;
+	}
+	return field;
+}
+
+
+void
+kpidField::invert()
+{
+	for (int i=0; i<size(); i++) {
+		this->at(i) = !this->at(i);
+	}
+}
+
+
+cv::Mat
+kpidField::createMask (const kpidField &fld1, const kpidField &fld2)
+{
+	cv::Mat mask = cv::Mat::zeros(fld2.size(), fld1.size(), CV_8U);
+	for (kpid i=0; i<fld2.size(); i++) {
+		for (kpid j=0; j<fld1.size(); j++) {
+			if (fld2[i]==true and fld1[j]==true)
+				mask.at<char>(i,j) = 1;
+		}
+	}
+	return mask;
+}
+
+
+uint
+kpidField::countPositive() const
+{
+	uint n = 0;
+	for (const kpid &v: *this) {
+		if (v==true)
+			n += 1;
+	}
+	return n;
 }

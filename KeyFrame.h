@@ -74,12 +74,19 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
+//	static void matchSubset (
+//		const KeyFrame &k1, const KeyFrame &k2,
+//		cv::Ptr<cv::DescriptorMatcher> matcher,
+//		std::vector<FeaturePair> &featurePairs,
+//		std::set<kpid> kpListInKf1=std::set<kpid>(),
+//		std::set<kpid> kpListInKf2=std::set<kpid>()
+//	);
+
 	static void matchSubset (
 		const KeyFrame &k1, const KeyFrame &k2,
 		cv::Ptr<cv::DescriptorMatcher> matcher,
 		std::vector<FeaturePair> &featurePairs,
-		std::set<kpid> kpListInKf1=std::set<kpid>(),
-		std::set<kpid> kpListInKf2=std::set<kpid>()
+		const kpidField &kp1list, const kpidField &kp2list
 	);
 
 	static void triangulate (
@@ -113,8 +120,6 @@ public:
 
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
-	kpidField makeField (const std::vector<kpid> &kpIds);
-	kpidField makeField (const std::set<kpid> &kpIds);
 
 protected:
 

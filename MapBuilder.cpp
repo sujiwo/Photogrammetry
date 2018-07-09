@@ -88,6 +88,7 @@ void MapBuilder::buildKeyFrames (int maxNumOfFrames)
 	if (maxNumOfFrames==0)
 		maxNumOfFrames = dataset.size();
 
+#pragma omp parallel for
 	for (uint i=0; i<maxNumOfFrames; i++) {
 		createFrame(dataset[i]);
 	}
@@ -129,11 +130,15 @@ bool MapBuilder::run (int maxKeyframes)
 
 bool MapBuilder::run2 (int maxKeyframes)
 {
+	if (maxKeyframes==0)
+		maxKeyframes = dataset.size();
+	cout << "Initializing...\n";
 	buildKeyFrames(maxKeyframes);
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
 	cMap->estimateStructure(kfList[0], kfList[1]);
+	cout << "Map initialized\n";
 
 	for (int i=2; i<maxKeyframes; i++) {
 		cMap->estimateAndTrack(kfList[i-1], kfList[i]);
