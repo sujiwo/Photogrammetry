@@ -37,6 +37,12 @@ struct FeaturePair {
 	cv::Point2f keypoint1;
 	kpid kpid2;
 	cv::Point2f keypoint2;
+
+	Eigen::Vector2d toEigen1 () const
+	{ return Eigen::Vector2d(keypoint1.x, keypoint1.y); }
+
+	Eigen::Vector2d toEigen2 () const
+	{ return Eigen::Vector2d(keypoint2.x, keypoint2.y); }
 };
 
 struct CameraPinholeParams;

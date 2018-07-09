@@ -77,12 +77,6 @@ mpid VMap::createMapPoint(const Vector3d &p, MapPoint **ptr)
 }
 
 
-KeyFrame* VMap::getKeyFrameById (const kfid &i) const
-{
-	return keyframeInvIdx.at(i);
-}
-
-
 void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 {
 	const KeyFrame
@@ -108,6 +102,13 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 }
 
 
+double distance (const Vector2d &p1, const Vector2d &p2)
+{
+	Vector2d dx=p1-p2;
+	return dx.norm();
+}
+
+
 void
 VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 {
@@ -121,13 +122,21 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	vector<FeaturePair> pairList12;
 	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
 	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
-	if (pairList12.size() > 0) {
-		for (auto &p: pairList12) {
-			mpid ptId = kf1kp2mp[p.kpid1];
-			// This particular mappoint is visible in KF2
-			pointAppearances[ptId].insert(kfid2);
-			framePoints[kfid2][ptId] = p.kpid2;
-		}
+	// XXX: Output of this function in pairList12 still needs to be filtered
+
+	// Check the matching with projection
+	for (auto &p: pairList12) {
+		const mpid ptId = kf1kp2mp[p.kpid1];
+
+		// Try projection
+		Vector2d kpf = kf2->project(getMapPointById(ptId)->getPosition());
+		double d = distance(kpf, p.toEigen2());
+		if (d >= 4.0)
+			continue;
+
+		// This particular mappoint is visible in KF2
+		pointAppearances[ptId].insert(kfid2);
+		framePoints[kfid2][ptId] = p.kpid2;
 	}
 
 	// Estimate new mappoints that are visible in KF1 & KF2

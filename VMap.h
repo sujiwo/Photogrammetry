@@ -89,8 +89,11 @@ public:
 		const Eigen::Vector3d &p,
 		MapPoint **ptr=NULL);
 
-	KeyFrame* getKeyFrameById (const kfid &i) const;
-	MapPoint* getMapPointById (const mpid &i) const;
+	inline KeyFrame* getKeyFrameById (const kfid &i) const
+	{ return keyframeInvIdx.at(i); }
+
+	inline MapPoint* getMapPointById (const mpid &i) const
+	{ return mappointInvIdx.at(i); }
 
 	std::vector<kfid> getKeyFrameList() const;
 	std::vector<mpid> getMapPointList() const;
