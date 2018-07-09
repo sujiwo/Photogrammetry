@@ -206,3 +206,14 @@ Vector2d KeyFrame::project(const Vector3d &pt3) const
 	Vector3d ptx = projMatrix * pt3.homogeneous();
 	return ptx.head(2) / ptx[2];
 }
+
+
+kpidField
+KeyFrame::makeField (const std::set<kpid> &kpIds)
+{
+	kpidField field(numOfKeyPoints(), false);
+	for (kpid &i: kpIds) {
+
+	}
+	return field;
+}

@@ -113,6 +113,9 @@ public:
 
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
+	kpidField makeField (const std::vector<kpid> &kpIds);
+	kpidField makeField (const std::set<kpid> &kpIds);
+
 protected:
 
 	template <class Archive>

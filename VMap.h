@@ -26,7 +26,7 @@ class MapPoint;
 
 typedef uint64_t kfid;
 typedef uint64_t mpid;
-typedef int kpid;
+typedef decltype(cv::DMatch::trainIdx) kpid;
 
 
 struct CameraPinholeParams {
@@ -47,6 +47,10 @@ enum FeatureDetectorT {
 enum DescriptorMatcherT {
 	BruteForce
 };
+
+
+typedef std::vector<bool>
+	kpidField;
 
 
 class VMap {
