@@ -191,3 +191,11 @@ Vector2d KeyFrame::project(const Vector3d &pt3) const
 	Vector3d ptx = projMatrix * pt3.homogeneous();
 	return ptx.head(2) / ptx[2];
 }
+
+
+Eigen::Vector3d
+KeyFrame::transform (const Eigen::Vector3d &pt3) const
+{
+	Vector4d ptx = externalParamMatrix4()* pt3.homogeneous();
+	return ptx.hnormalized();
+}

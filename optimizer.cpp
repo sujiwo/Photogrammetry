@@ -98,11 +98,29 @@ void bundle_adjustment (VMap *orgMap)
 					->getKeyPointId(kfIds, mid));
 			cv::Point2f p2D = p2K.pt;
 
-			g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
+			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
 			edge->setVertex(0, vMp);
 			edge->setVertex(1, vertexKfMapInv[kfIds]);
 			Vector2d m(p2D.x, p2D.y);
 			edge->setMeasurement(m);
+
+			edge->fx = camPtr.fx;
+			edge->fy = camPtr.fy;
+			edge->cx = camPtr.cx;
+			edge->cy = camPtr.cy;
+
+			g2o::VertexSE3Expmap *vx = vertexKfMapInv[kfIds];
+			Vector3d mpx = vMp->estimate();
+			Vector3d mpxt = mp->getPosition();
+			Vector3d est = vx->estimate().map(vMp->estimate());
+			Vector2d chk1 = orgMap->keyframe(kfIds)->project(mp->getPosition());
+			// XXX: one of these calculation has errors on it
+			Vector2d chk2 = edge->cam_project(vertexKfMapInv[kfIds]->estimate().map(mp->getPosition()));
+
+			cout << chk1 << endl;
+			cout << chk2 << endl;
+			exit(1);
+
 
 			// XXX: Doubtful
 			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
