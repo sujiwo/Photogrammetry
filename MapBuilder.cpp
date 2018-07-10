@@ -13,6 +13,7 @@
 #include "INIReader.h"
 #include "KeyFrame.h"
 #include "MapBuilder.h"
+#include "Viewer.h"
 #include "optimizer.h"
 
 
@@ -74,6 +75,8 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 
 	cMap = new VMap(mask, featureDetector, bfMatch);
 	cMap->setCameraParameters(cparams);
+
+	viewer = new Viewer(cMap, &dataset);
 
 	inputfd.close();
 }
@@ -137,11 +140,14 @@ bool MapBuilder::run2 (int maxKeyframes)
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
+	viewer->update(kfList[0]);
 	cMap->estimateStructure(kfList[0], kfList[1]);
 	cout << "Map initialized\n";
+	viewer->update(kfList[1]);
 
 	for (int i=2; i<maxKeyframes; i++) {
 		cMap->estimateAndTrack(kfList[i-1], kfList[i]);
+		viewer->update(kfList[i]);
 		cout << i << '/' << dataset.size() << endl;
 	}
 

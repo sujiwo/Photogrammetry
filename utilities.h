@@ -74,4 +74,15 @@ set<T> subtract (const set<T> &A, const set<T> &B)
 }
 
 
+template<typename K, typename V>
+vector<V> allValues (const map<K,V> &sMap)
+{
+	vector<V> allV;
+	for (auto &kv: sMap) {
+		allV.push_back(kv.second);
+	}
+	return allV;
+}
+
+
 #endif /* UTILITIES_H_ */

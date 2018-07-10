@@ -30,6 +30,7 @@ set(SOURCE_FILES
 	MapBuilder.cpp
 	KeyFrame.cpp
 	MapPoint.cpp
+	Viewer.cpp
 	triangulation.cpp
 	optimizer.cpp
 )

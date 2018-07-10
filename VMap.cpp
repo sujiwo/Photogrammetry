@@ -283,6 +283,17 @@ VMap::load(const string &filepath)
 }
 
 
+map<mpid,kpid>
+VMap::allMapPointsAtKeyFrame(const kfid f)
+{
+	if (framePoints.size()==0)
+		return map<mpid,kpid>();
+
+	return framePoints.at(f);
+}
+
+
+
 vector<pair<Vector3d,Quaterniond> >
 VMap::dumpCameraPoses () const
 {

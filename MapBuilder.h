@@ -32,6 +32,9 @@ struct DataItem {
 };
 
 
+class Viewer;
+
+
 typedef std::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pointCloudPtr;
 
 
@@ -60,6 +63,8 @@ private:
 	CameraPinholeParams cparams;
 
 	VMap *cMap;
+
+	Viewer *viewer;
 
 	cv::Mat mask;
 
