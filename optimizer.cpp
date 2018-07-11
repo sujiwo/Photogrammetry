@@ -7,6 +7,7 @@
 
 
 #include "optimizer.h"
+#include "KeyFrame.h"
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
 #include "g2o/solvers/linear_solver_eigen.h"
@@ -31,11 +32,28 @@ g2o::SE3Quat toSE3Quat
 { return g2o::SE3Quat(orientation, position); }
 
 
+g2o::SE3Quat toSE3Quat (const KeyFrame &kf)
+{
+	Matrix4d extMat = kf.externalParamMatrix4();
+	return g2o::SE3Quat(extMat.block<3,3>(0,0), extMat.block<3,1>(0,3));
+}
+
+
 void fromSE3Quat(const g2o::SE3Quat &pose,
 	Vector3d &position, Quaterniond &orientation)
 {
 	position = pose.translation();
 	orientation = pose.rotation();
+}
+
+
+#include <cstdio>
+void debugVector (const VectorXd &v)
+{
+	if (v.size()==2)
+		printf ("(%f, %f)\n", v.x(), v.y());
+	else if (v.size()==3)
+		printf ("(%f, %f, %f)\n", v.x(), v.y(), v.z());
 }
 
 
@@ -75,68 +93,78 @@ void bundle_adjustment (VMap *orgMap)
 		vertexKfMap.insert(pair<oid, kfid> (vId, kId));
 		vertexKfMapInv[kId] = vKf;
 		vId ++;
-	}
 
-	for (mpid &mid: mappointList) {
+		for (auto &ptr: orgMap->allMapPointsAtKeyFrame(kId)) {
 
-		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
-		MapPoint *mp = orgMap->mappoint(mid);
-		vMp->setEstimate(mp->getPosition());
-		vMp->setMarginalized(true);
-		vMp->setId(vId);
-		optimizer.addVertex(vMp);
-		vertexMpMap.insert(pair<oid, mpid> (vId, mid));
-		vertexMpMapInv[mid] = vMp;
-		vId ++;
+			const MapPoint *mp = orgMap->mappoint(ptr.first);
+			const cv::KeyPoint p2K = kf->getKeyPointAt(ptr.second);
+			Vector2d pObs (p2K.pt.x, p2K.pt.y);
 
-		// Edges
-		for (auto &kfIds: orgMap->getRelatedKeyFrames(mid)) {
-
-			// Get map point's projection in this particular keyframe
-			cv::KeyPoint p2K = orgMap->keyframe(kfIds)
-				->getKeyPointAt(orgMap
-					->getKeyPointId(kfIds, mid));
-			cv::Point2f p2D = p2K.pt;
-
-			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
-			edge->setVertex(0, vMp);
-			edge->setVertex(1, vertexKfMapInv[kfIds]);
-			Vector2d m(p2D.x, p2D.y);
-			edge->setMeasurement(m);
-
-			edge->fx = camPtr.fx;
-			edge->fy = camPtr.fy;
-			edge->cx = camPtr.cx;
-			edge->cy = camPtr.cy;
-
-			g2o::VertexSE3Expmap *vx = vertexKfMapInv[kfIds];
-			Vector3d mpx = vMp->estimate();
-			Vector3d mpxt = mp->getPosition();
-			Vector3d est = vx->estimate().map(vMp->estimate());
-			Vector2d chk1 = orgMap->keyframe(kfIds)->project(mp->getPosition());
-			// XXX: one of these calculation has errors on it
-			Vector2d chk2 = edge->cam_project(vertexKfMapInv[kfIds]->estimate().map(mp->getPosition()));
-
-			cout << chk1 << endl;
-			cout << chk2 << endl;
-			exit(1);
-
-
-			// XXX: Doubtful
-			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
-//			Vector2d prj = orgMap->keyframe(kfIds)->project(mp->getPosition());
-//			uncertainty.diagonal() = Vector2d(pow(prj[0]-m[0],2),
-//				pow(prj[1]-m[1], 2));
-
-			edge->setInformation(uncertainty);
-			edge->setParameterId(0,0);
-
-//			g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
-//			edge->setRobustKernel(rk);
-//			rk->setDelta(thHuber2D);
-
-			optimizer.addEdge(edge);
+			g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
+			vMp->setEstimate(mp->getPosition());
+			vMp->setMarginalized(true);
+			vMp->setId(vId);
+			optimizer.addVertex(vMp);
+			vertexMpMap.insert(pair<oid,mpid> (vId, mp->getId()));
+			vertexMpMapInv[mp->getId()] = vMp;
+			vId++;
 		}
+
+
+
+
+
+
+//		g2o::VertexSE3Expmap *vKf = new g2o::VertexSE3Expmap();
+//		KeyFrame *kf = orgMap->keyframe(kId);
+//		vKf->setEstimate (toSE3Quat(kf->getPosition(), kf->getOrientation()));
+//		vKf->setId(vId);
+//		vKf->setFixed(kId<2);
+//		optimizer.addVertex(vKf);
+//		vertexKfMap.insert(pair<oid, kfid> (vId, kId));
+//		vertexKfMapInv[kId] = vKf;
+//		vId ++;
+//	}
+//
+//	for (mpid &mid: mappointList) {
+//
+//		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
+//		MapPoint *mp = orgMap->mappoint(mid);
+//		vMp->setEstimate(mp->getPosition());
+//		vMp->setMarginalized(true);
+//		vMp->setId(vId);
+//		optimizer.addVertex(vMp);
+//		vertexMpMap.insert(pair<oid, mpid> (vId, mid));
+//		vertexMpMapInv[mid] = vMp;
+//		vId ++;
+//
+//		// Edges
+//		for (auto &kfIds: orgMap->getRelatedKeyFrames(mid)) {
+//
+//			// Get map point's projection in this particular keyframe
+//			cv::KeyPoint p2K = orgMap->keyframe(kfIds)
+//				->getKeyPointAt(orgMap
+//					->getKeyPointId(kfIds, mid));
+//			cv::Point2f p2D = p2K.pt;
+//
+//			g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
+//			edge->setVertex(0, vMp);
+//			edge->setVertex(1, vertexKfMapInv[kfIds]);
+//			Vector2d m(p2D.x, p2D.y);
+//			edge->setMeasurement(m);
+//
+//			edge->fx = camPtr.fx;
+//			edge->fy = camPtr.fy;
+//			edge->cx = camPtr.cx;
+//			edge->cy = camPtr.cy;
+//
+//			// XXX: Doubtful
+//			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
+//			edge->setInformation(uncertainty);
+//			edge->setParameterId(0,0);
+//
+//			optimizer.addEdge(edge);
+//		}
 	}
 
 	optimizer.initializeOptimization();
