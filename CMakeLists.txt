@@ -15,6 +15,7 @@ set (gflags_LIBRARIES gflags)
 
 
 add_subdirectory (g2o)
+add_subdirectory (DBoW2)
 
 
 include_directories (
@@ -31,6 +32,7 @@ set(SOURCE_FILES
 	KeyFrame.cpp
 	MapPoint.cpp
 	Viewer.cpp
+	ImageDatabase.cpp
 	triangulation.cpp
 	optimizer.cpp
 )
@@ -39,6 +41,7 @@ set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	g2o
+	DBoW2
 #	${THEIA_LIBRARIES}
 )
 
