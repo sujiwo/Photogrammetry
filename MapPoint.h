@@ -42,6 +42,9 @@ public:
 
 	void createDescriptor(const std::vector<KeyMapPoint> &visibleIn);
 
+	cv::Mat getDescriptor() const
+	{ return descriptor.clone(); }
+
 	double X() const
 	{ return position.x(); }
 

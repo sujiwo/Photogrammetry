@@ -12,6 +12,7 @@
 #include "KeyFrame.h"
 #include "MapPoint.h"
 #include "MapObjectSerialization.h"
+#include "ImageDatabase.h"
 #include "utilities.h"
 
 
@@ -32,6 +33,7 @@ VMap::VMap(
 		descriptorMatcher(dmatcher)
 {
 	mask = m.clone();
+	imageDB = new ImageDatabase(this);
 }
 
 

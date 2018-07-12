@@ -15,6 +15,7 @@
 #include "MapBuilder.h"
 #include "Viewer.h"
 #include "optimizer.h"
+#include "ImageDatabase.h"
 
 
 using namespace std;
@@ -150,6 +151,10 @@ bool MapBuilder::run2 (int maxKeyframes)
 		viewer->update(kfList[i]);
 		cout << i << '/' << dataset.size() << endl;
 	}
+
+	cout << "Rebuilding Image DB... ";
+	cMap->getImageDB()->rebuildAll();
+	cout << "Done\n";
 
 	return true;
 }

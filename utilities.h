@@ -85,4 +85,24 @@ vector<V> allValues (const map<K,V> &sMap)
 }
 
 
+template<typename Scalar>
+using VectorXx = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+
+
+template <typename Scalar>
+Scalar median(const VectorXx<Scalar> &v)
+{
+	int n = v.rows();
+	vector<Scalar> vs (v.data(), v.data()+v.rows());
+	sort(vs.begin(), vs.end());
+	return vs[(n-1)/2];
+}
+
+
+inline
+int medianx (const Eigen::VectorXi &v)
+{
+	return median(v);
+}
+
 #endif /* UTILITIES_H_ */

@@ -22,6 +22,7 @@
 
 class KeyFrame;
 class MapPoint;
+class ImageDatabase;
 
 
 typedef uint64_t kfid;
@@ -111,6 +112,12 @@ public:
 	std::vector<kfid> allKeyFrames () const;
 	std::vector<mpid> allMapPoints () const;
 
+	int numOfKeyFrames() const
+	{ return keyframeInvIdx.size(); }
+
+	int numOfMapPoints() const
+	{ return mappointInvIdx.size(); }
+
 	std::set<kfid> getRelatedKeyFrames (const mpid &i) const
 	{ return pointAppearances.at(i); }
 
@@ -126,9 +133,11 @@ public:
 	std::vector<std::pair<Eigen::Vector3d,Eigen::Quaterniond> >
 		dumpCameraPoses () const;
 
-//	kpidField makeField (const std::vector<kpid> &kpIds);
 	kpidField makeField (const kfid &kf);
 	kpidField visibleField (const kfid &kf);
+
+	ImageDatabase* getImageDB() const
+	{ return imageDB; }
 
 
 protected:
@@ -156,6 +165,8 @@ protected:
 	cv::Ptr<cv::FeatureDetector> featureDetector;
 	cv::Ptr<cv::DescriptorMatcher> descriptorMatcher;
 	CameraPinholeParams camera;
+
+	ImageDatabase *imageDB;
 };
 
 #endif /* VMAP_H_ */

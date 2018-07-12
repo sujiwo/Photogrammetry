@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
 #include "VMap.h"
@@ -28,15 +29,20 @@ public:
 	ImageDatabase (VMap *_m);
 	virtual ~ImageDatabase();
 
-	void rebuild ();
+	void addKeyFrame (const kfid &kfId);
 
-	// ???
-	const kfid find ();
+	void rebuildAll ();
+
+	// Used for loop detection
+	const kfid find (const KeyFrame *kf);
 
 private:
 	ORBVocabulary myVoc;
 	std::vector<std::set<kfid> > invertedKeywordDb;
 	VMap *cMap;
+
+	std::map<kfid, DBoW2::BowVector> BoWList;
+	std::map<kfid, DBoW2::FeatureVector> FeatVecList;
 };
 
 #endif /* IMAGEDATABASE_H_ */
