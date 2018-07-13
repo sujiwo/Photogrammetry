@@ -237,6 +237,8 @@ VMap::save(const string &filepath)
 	mapStore << framePoints;
 	mapStore << mask;
 
+	mapStore << *imageDB;
+
 	return true;
 }
 

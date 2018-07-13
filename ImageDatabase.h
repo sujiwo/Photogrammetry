@@ -12,10 +12,12 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <boost/serialization/serialization.hpp>
 #include "DBoW2/BowVector.h"
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
 #include "VMap.h"
+#include "cvobj_serialization.h"
 
 
 
@@ -36,6 +38,16 @@ public:
 
 	// Used for loop detection
 	const kfid find (const KeyFrame *kf);
+
+protected:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int file_version)
+	{
+		ar & invertedKeywordDb;
+		ar & BoWList;
+//		ar & FeatVecList;
+	}
 
 private:
 	ORBVocabulary myVoc;
