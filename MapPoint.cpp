@@ -6,6 +6,7 @@
  */
 
 #include <algorithm>
+#include <limits>
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "utilities.h"
@@ -54,7 +55,7 @@ int ORBDescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 void
 MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 {
-	vector<cv::Mat> allDescriptors(visibleIn.size());
+	vector<cv::Mat> allDescriptors;
 	for (auto &kmp: visibleIn) {
 		allDescriptors.push_back(kmp.keyframe->getDescriptorAt(kmp.keypointIdx));
 	}
@@ -62,7 +63,7 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 	if (allDescriptors.empty())
 		return;
 
-	const uint N = allDescriptors.size();
+	const size_t N = allDescriptors.size();
 	MatrixXi MDistances
 		= MatrixXi::Zero(N,N);
 	for (int i=0; i<N; i++) {
@@ -73,10 +74,10 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 		}
 	}
 
-	uint BestMedian = UINT_MAX;
+	double BestMedian = numeric_limits<double>::max();
 	int medIdx;
 	for (int j=0; j<N; j++) {
-		uint cMedian = medianx(MDistances.col(j));
+		double cMedian = medianx(MDistances.col(j));
 		if (cMedian < BestMedian) {
 			BestMedian = cMedian;
 			medIdx = j;

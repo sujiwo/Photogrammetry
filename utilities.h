@@ -90,12 +90,15 @@ using VectorXx = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
 
 template <typename Scalar>
-Scalar median(const VectorXx<Scalar> &v)
+double median(const VectorXx<Scalar> &v)
 {
 	int n = v.rows();
 	vector<Scalar> vs (v.data(), v.data()+v.rows());
 	sort(vs.begin(), vs.end());
-	return vs[(n-1)/2];
+	if (n%2==1)
+		return (double)vs[(n-1)/2];
+	else
+		return (double(vs[n/2])+double(vs[(n/2)-1])) / 2;
 }
 
 

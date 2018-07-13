@@ -76,6 +76,9 @@ public:
 	inline void setCameraParameters (const CameraPinholeParams &vscamIntr)
 	{ camera = vscamIntr; }
 
+	const cv::Mat getMask() const
+	{ return mask; }
+
 	inline const CameraPinholeParams getCameraParameters()
 	{ return camera; }
 

@@ -12,6 +12,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include "DBoW2/BowVector.h"
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
 #include "VMap.h"
@@ -38,7 +39,8 @@ public:
 
 private:
 	ORBVocabulary myVoc;
-	std::vector<std::set<kfid> > invertedKeywordDb;
+	std::map<DBoW2::WordId, std::set<kfid> > invertedKeywordDb;
+
 	VMap *cMap;
 
 	std::map<kfid, DBoW2::BowVector> BoWList;
