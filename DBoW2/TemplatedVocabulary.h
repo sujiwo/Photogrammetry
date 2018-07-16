@@ -243,7 +243,7 @@ public:
    * Saves the vocabulary into a text file
    * @param filename
    */
-  void saveToTextFile(const std::string &filename) const;  
+  void saveToTextFile(const std::string &filename) const;
 
   /**
    * Saves the vocabulary into a file

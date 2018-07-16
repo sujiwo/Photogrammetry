@@ -10,7 +10,6 @@ find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-#find_package (Theia REQUIRED)
 set (gflags_LIBRARIES gflags)
 
 
@@ -23,7 +22,7 @@ include_directories (
 	${OpenCV_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
 	g2o
-#	${THEIA_INCLUDE_DIRS}
+	DBoW2
 )
 
 set(SOURCE_FILES
@@ -42,7 +41,6 @@ set(REQUIRED_LIBS
 	${PCL_LIBRARIES}
 	g2o
 	DBoW2
-#	${THEIA_LIBRARIES}
 )
 
 add_executable (map_test

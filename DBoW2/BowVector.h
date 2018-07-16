@@ -13,6 +13,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/base_object.hpp>
+
 
 namespace DBoW2 {
 
@@ -102,6 +105,13 @@ public:
 	 * @param W number of words in the vocabulary
 	 */
 	void saveM(const std::string &filename, size_t W) const;
+
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & boost::serialization::base_object<std::map<WordId,WordValue> >
+			(*this);
+	}
 };
 
 } // namespace DBoW2

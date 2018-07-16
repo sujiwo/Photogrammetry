@@ -15,6 +15,8 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/map.hpp>
 #include "cvobj_serialization.h"
+#include "DBoW2/FORB.h"
+#include "DBoW2/TemplatedVocabulary.h"
 
 #include "VMap.h"
 #include "KeyFrame.h"
@@ -26,7 +28,6 @@
 
 BOOST_SERIALIZATION_SPLIT_FREE (Eigen::Vector3d);
 BOOST_SERIALIZATION_SPLIT_FREE (Eigen::Quaterniond);
-
 //typedef Eigen::Matrix<double,3,4> Mat_3_4;
 //BOOST_SERIALIZATION_SPLIT_FREE (Mat_3_4);
 

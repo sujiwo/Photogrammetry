@@ -249,7 +249,7 @@ VMap::load(const string &filepath)
 	MapFileHeader header;
 
 	fstream mapFileFd;
-	mapFileFd.open(filepath, fstream::in);
+	mapFileFd.open(filepath.c_str(), fstream::in);
 	if (!mapFileFd.is_open())
 		throw runtime_error(string("Unable to open map file: ") + filepath);
 	mapFileFd.read((char*)&header, sizeof(header));
@@ -269,6 +269,8 @@ VMap::load(const string &filepath)
 	mapStore >> pointAppearances;
 	mapStore >> framePoints;
 	mapStore >> mask;
+
+	mapStore >> *imageDB;
 
 	// Rebuild pointers
 	keyframeInvIdx.clear();
