@@ -26,6 +26,12 @@ Viewer::Viewer (VMap *m, const std::vector<DataItem> *ds) :
 }
 
 
+Viewer::~Viewer()
+{
+	cv::destroyWindow(wndName);
+}
+
+
 vector<cv::KeyPoint>
 collectAllKeypoints (const KeyFrame *kf, const vector<kpid> &allKpIds)
 {

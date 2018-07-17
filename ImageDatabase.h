@@ -13,6 +13,7 @@
 #include <set>
 #include <map>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
 #include "DBoW2/BowVector.h"
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"

@@ -22,7 +22,9 @@ using namespace std;
 
 
 VMap::VMap()
-{ }
+{
+	imageDB = new ImageDatabase(this);
+}
 
 
 VMap::VMap(
@@ -38,7 +40,9 @@ VMap::VMap(
 
 
 VMap::~VMap()
-{}
+{
+	delete(imageDB);
+}
 
 
 Matrix<double,3,4> CameraPinholeParams::toMatrix() const

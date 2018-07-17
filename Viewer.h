@@ -19,6 +19,7 @@
 class Viewer {
 public:
 	Viewer (VMap *srMap, const std::vector<DataItem> *ds=NULL);
+	~Viewer ();
 	void update (const kfid &curFrm);
 
 private:

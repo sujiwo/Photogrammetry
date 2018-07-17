@@ -59,12 +59,11 @@ int main (int argc, char *argv[])
 {
 	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
-	mapBuilder.run2(10);
+	mapBuilder.run2(3);
 	bundle_adjustment(mapBuilder.getMap());
 //	mapBuilder.dump("/tmp/test_nba.pcd");
 //	saveCameraPoses(mapBuilder.getMap(), "/tmp/test_nba.txt");
 	mapBuilder.getMap()->save("/home/sujiwo/maptest.map");
-//	std::cout << "Done" << std::endl;
 
 	return 0;
 }

@@ -4,7 +4,7 @@ project (Photogrammetry)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-find_package (Boost REQUIRED)
+find_package (Boost REQUIRED COMPONENTS system serialization)
 find_package (OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
@@ -25,38 +25,40 @@ include_directories (
 	DBoW2
 )
 
-set(SOURCE_FILES
-	VMap.cpp
-	MapBuilder.cpp
-	KeyFrame.cpp
-	MapPoint.cpp
-	Viewer.cpp
-	ImageDatabase.cpp
-	triangulation.cpp
-	optimizer.cpp
-)
-
 set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
+	boost_serialization
 	g2o
 	DBoW2
 )
 
+add_library(
+	photogrammetry STATIC
+		VMap.cpp
+		MapBuilder.cpp
+		KeyFrame.cpp
+		MapPoint.cpp
+		Viewer.cpp
+		ImageDatabase.cpp
+		triangulation.cpp
+		optimizer.cpp		
+)
+
 add_executable (map_test
 	map_test.cpp
-	${SOURCE_FILES}
 )
 
 target_link_libraries (map_test
+	photogrammetry
 	${REQUIRED_LIBS}
 )
 
 add_executable(map_load
 	map_load.cpp
-	${SOURCE_FILES}
 )
 
 target_link_libraries(map_load
+	photogrammetry
 	${REQUIRED_LIBS}
 )

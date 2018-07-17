@@ -11,4 +11,4 @@ add_library(DBoW2 STATIC
 	DUtils/Random.cpp
 	DUtils/Timestamp.cpp
 )
-target_link_libraries(DBoW2 ${OpenCV_LIBS})
+#target_link_libraries(DBoW2 ${OpenCV_LIBS})

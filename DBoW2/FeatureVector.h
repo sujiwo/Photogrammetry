@@ -16,6 +16,8 @@
 #include "BowVector.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
 
 
 namespace DBoW2 {
@@ -51,6 +53,9 @@ public:
    */
   friend std::ostream& operator<<(std::ostream &out, const FeatureVector &v);
     
+
+	friend class boost::serialization::access;
+
 	template<class Archive>
 	void serialize(Archive &ar, const unsigned int version)
 	{
@@ -59,6 +64,20 @@ public:
 			(*this);
 	}
 
+//	template<class Archive>
+//	void save(Archive &ar, const unsigned int version)
+//	{
+// 		ar << const_cast<std::map<NodeId, std::vector<unsigned int> > > (*this);
+//	}
+//
+//	template<class Archive>
+//	void load(Archive &ar, const unsigned int version)
+//	{
+//		std::map<NodeId, std::vector<unsigned int> > rCopy;
+//		ar >> rCopy;
+//	}
+//
+//	BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 } // namespace DBoW2
