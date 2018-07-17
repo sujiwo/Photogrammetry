@@ -24,9 +24,5 @@ int main (int argc, char *argv[])
 	myMap.load("/home/sujiwo/maptest.map");
 
 	cout << "Done" << endl;
-
-		cout << "Bundling..." << endl;
-		bundle_adjustment (&myMap);
-
 	return 0;
 }

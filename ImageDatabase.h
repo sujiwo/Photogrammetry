@@ -50,13 +50,6 @@ protected:
 			ar << n.descriptor;
 			ar << n.word_id;
 		}
-
-		vector<decltype(Node::word_id)> vNodePtr;
-		vNodePtr.resize(numWords);
-		for (int i=0; i<numWords; i++) {
-			vNodePtr[i] = m_words[i]->id;
-		}
-		ar << vNodePtr;
 	}
 
 	template<class Archive>
@@ -86,13 +79,11 @@ protected:
 			ar >> n.parent;
 			ar >> n.descriptor;
 			ar >> n.word_id;
+
+			if (n.isLeaf()) {
+				m_words[n.word_id] = &n;
+			}
 	    }
-
-		vector<decltype(Node::word_id)> vNodePtr;
-		ar >> vNodePtr;
-		for (int i=0; i<numWords; i++) {
-
-		}
 	}
 
 	BOOST_SERIALIZATION_SPLIT_MEMBER();
