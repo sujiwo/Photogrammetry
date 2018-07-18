@@ -28,6 +28,8 @@ using namespace Eigen;
 
 typedef Matrix<double,3,4> CameraIntrinsicMatrix;
 
+const Eigen::Vector3d origin(0,0,0);
+
 
 MapBuilder::MapBuilder(const string &datasetDir) :
 	cMap(NULL)
@@ -93,17 +95,17 @@ void MapBuilder::buildKeyFrames (int maxNumOfFrames)
 		maxNumOfFrames = dataset.size();
 
 	for (uint i=0; i<maxNumOfFrames; i++) {
-		createFrame(dataset[i]);
+		createFrame(dataset[i], i);
 	}
 }
 
 
-KeyFrame* MapBuilder::createFrame (const DataItem &di)
+KeyFrame* MapBuilder::createFrame (const DataItem &di, kfid setKfId)
 {
 	KeyFrame *mNewFrame;
 	kfid kfid;
 	cv::Mat image = cv::imread(di.imagePath, cv::IMREAD_GRAYSCALE);
-	kfid = cMap->createKeyFrame(image, di.position, di.orientation, &mNewFrame);
+	kfid = cMap->createKeyFrame(image, di.position, di.orientation, &mNewFrame, setKfId);
 	return mNewFrame;
 }
 

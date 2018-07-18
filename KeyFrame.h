@@ -17,6 +17,7 @@
 #include <memory>
 #include <tuple>
 #include <boost/serialization/serialization.hpp>
+#include <limits>
 
 #include "VMap.h"
 #include "MapPoint.h"
@@ -47,6 +48,8 @@ struct FeaturePair {
 
 struct CameraPinholeParams;
 
+//const kfid defaultKfId = std::numeric_limits<kfid>;
+
 
 class KeyFrame {
 public:
@@ -57,7 +60,8 @@ public:
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
 			cv::Ptr<cv::FeatureDetector> fdetector,
-			const CameraPinholeParams *cameraIntr);
+			const CameraPinholeParams *cameraIntr,
+			kfid forceId=std::numeric_limits<kfid>::max());
 	virtual ~KeyFrame();
 
 	inline int numOfKeyPoints() const

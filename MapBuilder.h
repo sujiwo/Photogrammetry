@@ -81,7 +81,8 @@ private:
 	cv::Mat vocabulary;
 	void trainVocabulary ();
 
-	KeyFrame* createFrame (const DataItem &di);
+	KeyFrame* createFrame (const DataItem &di,
+		kfid setKfId=std::numeric_limits<kfid>::max());
 };
 
 #endif /* MAPBUILDER_H_ */

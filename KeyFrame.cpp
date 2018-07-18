@@ -48,13 +48,17 @@ KeyFrame::KeyFrame(
 	const Vector3d &p, const Eigen::Quaterniond &o,
 	cv::Mat &mask,
 	cv::Ptr<cv::FeatureDetector> fdetector,
-	const CameraPinholeParams *cameraIntr) :
+	const CameraPinholeParams *cameraIntr,
+	kfid forceId) :
 
 	orientation(o),
-	position(p),
-//	prev(NULL),
-	id (nextId++)
+	position(p)
 {
+	if (forceId==numeric_limits<kfid>::max()) {
+		id = nextId++;
+	}
+	else id = forceId;
+
 	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
 
 	fdetector->detectAndCompute(imgSrc, mask, keypoints, descriptors, false);

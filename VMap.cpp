@@ -60,9 +60,10 @@ Matrix<double,3,4> CameraPinholeParams::toMatrix() const
 
 kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
-		KeyFrame **ptr)
+		KeyFrame **ptr,
+		kfid setId)
 {
-	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &camera);
+	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &camera, setId);
 	kfid nId = nKf->getId();
 	keyframeInvIdx.insert(pair<kfid,KeyFrame*> (nId, nKf));
 

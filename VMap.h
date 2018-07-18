@@ -13,6 +13,7 @@
 #include <set>
 #include <map>
 #include <Eigen/Eigen>
+#include <limits>
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -91,7 +92,8 @@ public:
 	kfid createKeyFrame (
 		const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
-		KeyFrame **ptr=NULL);
+		KeyFrame **ptr=NULL,
+		kfid setId=std::numeric_limits<kfid>::max());
 
 	mpid createMapPoint (
 		const Eigen::Vector3d &p,
