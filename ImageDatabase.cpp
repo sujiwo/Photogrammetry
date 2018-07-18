@@ -8,6 +8,7 @@
 #include "ImageDatabase.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
+#include "Frame.h"
 
 
 ImageDatabase::ImageDatabase(VMap *_m) :
@@ -90,8 +91,15 @@ ImageDatabase::rebuildAll()
 }
 
 
-const kfid
-ImageDatabase::find (const KeyFrame *kf)
+kfid
+ImageDatabase::find (const KeyFrame *kf) const
+{
+	return 0;
+}
+
+
+kfid
+ImageDatabase::find (const Frame &f) const
 {
 	return 0;
 }

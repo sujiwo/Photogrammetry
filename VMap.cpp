@@ -13,6 +13,7 @@
 #include "MapPoint.h"
 #include "MapObjectSerialization.h"
 #include "ImageDatabase.h"
+#include "Frame.h"
 #include "utilities.h"
 
 
@@ -391,4 +392,11 @@ kpidField::countPositive() const
 			n += 1;
 	}
 	return n;
+}
+
+
+kfid
+VMap::search (const Frame &f) const
+{
+	return 0;
 }

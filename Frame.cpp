@@ -7,9 +7,15 @@
 
 #include "Frame.h"
 
-Frame::Frame() {
-	// TODO Auto-generated constructor stub
 
+Frame::	Frame(
+	const cv::Mat &imgSrc,
+	cv::Ptr<cv::FeatureDetector> fdetector,
+	const CameraPinholeParams &cPar,
+	const cv::Mat &mask) :
+	image(imgSrc)
+{
+	fdetector->detectAndCompute(image, mask, keypoints, descriptors);
 }
 
 Frame::~Frame() {

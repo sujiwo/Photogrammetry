@@ -4,7 +4,7 @@ project (Photogrammetry)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-find_package (Boost REQUIRED COMPONENTS serialization python)
+find_package (Boost REQUIRED COMPONENTS serialization python graph)
 find_package (OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
@@ -46,6 +46,7 @@ add_library(
 		MapPoint.cpp
 		Viewer.cpp
 		ImageDatabase.cpp
+		Frame.cpp
 		triangulation.cpp
 		optimizer.cpp		
 )

@@ -3,6 +3,10 @@ project(DBoW2)
 
 find_package (OpenCV REQUIRED)
 
+include_directories(
+	${OpenCV_INCLUDE_DIRS}
+)
+
 add_library(DBoW2 STATIC
 	BowVector.cpp
 	FORB.cpp      

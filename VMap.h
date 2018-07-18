@@ -14,6 +14,8 @@
 #include <map>
 #include <Eigen/Eigen>
 
+#include <boost/graph/adjacency_list.hpp>
+
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d.hpp"
 #include <pcl/point_cloud.h>
@@ -48,6 +50,8 @@ enum FeatureDetectorT {
 enum DescriptorMatcherT {
 	BruteForce
 };
+
+class Frame;
 
 
 struct kpidField : std::vector<bool>
@@ -141,6 +145,8 @@ public:
 
 	ImageDatabase* getImageDB() const
 	{ return imageDB; }
+
+	kfid search (const Frame &f) const;
 
 
 protected:

@@ -91,6 +91,9 @@ protected:
 };
 
 
+class Frame;
+
+
 class ImageDatabase
 {
 
@@ -103,7 +106,9 @@ public:
 	void rebuildAll ();
 
 	// Used for loop detection
-	const kfid find (const KeyFrame *kf);
+	kfid find (const KeyFrame *kf) const;
+
+	kfid find (const Frame &f) const;
 
 protected:
 	friend class boost::serialization::access;
