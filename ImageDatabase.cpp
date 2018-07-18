@@ -5,10 +5,15 @@
  *      Author: sujiwo
  */
 
+#include <map>
 #include "ImageDatabase.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Frame.h"
+
+
+using namespace std;
+using namespace Eigen;
 
 
 ImageDatabase::ImageDatabase(VMap *_m) :
@@ -40,6 +45,8 @@ void
 ImageDatabase::rebuildAll()
 {
 	// 1: Build Map Points' Descriptors
+//#pragma omp parallel
+
 	for (const mpid &mid: cMap->getMapPointList()) {
 
 		MapPoint *mp = cMap->mappoint(mid);
@@ -58,7 +65,7 @@ ImageDatabase::rebuildAll()
 	// 2: Rebuild Vocabulary
 	vector<vector<DBoW2::FORB::TDescriptor> > keymapFeatures;
 	keymapFeatures.reserve(cMap->numOfKeyFrames());
-
+//#pragma omp parallel
 	for (auto &kid: cMap->allKeyFrames()) {
 		vector<cv::Mat> kfDescriptor;
 
@@ -74,6 +81,7 @@ ImageDatabase::rebuildAll()
 	myVoc.create(keymapFeatures);
 
 	// 3: Compute BoW & Feature Vectors
+//#pragma omp parallel
 	for (auto &kid: cMap->allKeyFrames()) {
 		KeyFrame *kf = cMap->keyframe(kid);
 		vector<cv::Mat> kfDescs = toDescriptorVector(kf->getDescriptors());
@@ -99,7 +107,37 @@ ImageDatabase::find (const KeyFrame *kf) const
 
 
 kfid
-ImageDatabase::find (const Frame &f) const
+ImageDatabase::find (Frame &f, bool simple) const
 {
-	return 0;
+	f.computeBoW(*this);
+
+	map<kfid, uint> kfRelated;
+	for (auto &bWrdPtr : f.getWords()) {
+		auto wid = bWrdPtr.first;
+
+		try {
+			const set<kfid> &relatedKf = invertedKeywordDb.at(wid);
+			for (const kfid &i: relatedKf) {
+				try {
+					kfRelated.at(i) += 1;
+				} catch (out_of_range&) {
+					kfRelated.at(i) = 1;
+				}
+			}
+		} catch (out_of_range&) {
+			continue;
+		}
+	}
+
+	if (simple) {
+		uint wCnt=0;
+		kfid mx;
+		for (auto &bPtr: kfRelated) {
+			if (bPtr.second > wCnt) {
+				mx = bPtr.first;
+				wCnt = bPtr.second;
+			}
+		}
+		return mx;
+	}
 }

@@ -16,6 +16,13 @@
 #include <Eigen/Geometry>
 #include "VMap.h"
 
+#include "DBoW2/BowVector.h"
+#include "DBoW2/FORB.h"
+#include "DBoW2/TemplatedVocabulary.h"
+
+
+class ImageDatabase;
+
 
 class Frame
 {
@@ -26,6 +33,11 @@ public:
 		const cv::Mat &mask=cv::Mat());
 	virtual ~Frame();
 
+	void computeBoW (const ImageDatabase &idb);
+
+	DBoW2::BowVector& getWords()
+	{ return words; }
+
 protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
@@ -33,6 +45,9 @@ protected:
 
 	Eigen::Vector3d _mPos;
 	Eigen::Quaterniond _mOri;
+
+	DBoW2::BowVector words;
+	DBoW2::FeatureVector featureVec;
 };
 
 #endif /* FRAME_H_ */

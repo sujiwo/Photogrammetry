@@ -108,7 +108,13 @@ public:
 	// Used for loop detection
 	kfid find (const KeyFrame *kf) const;
 
-	kfid find (const Frame &f) const;
+	kfid find (Frame &f, bool simple=false) const;
+
+	DBoW2::BowVector getWords (const kfid &k)
+	{ return BoWList[k]; }
+
+	const ORBVocabulary &vocabulary() const
+	{ return myVoc; }
 
 protected:
 	friend class boost::serialization::access;
@@ -130,5 +136,10 @@ private:
 	std::map<kfid, DBoW2::BowVector> BoWList;
 	std::map<kfid, DBoW2::FeatureVector> FeatVecList;
 };
+
+
+std::vector<cv::Mat>
+toDescriptorVector(const cv::Mat &Descriptors);
+
 
 #endif /* IMAGEDATABASE_H_ */

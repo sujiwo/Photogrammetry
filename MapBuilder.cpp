@@ -92,7 +92,6 @@ void MapBuilder::buildKeyFrames (int maxNumOfFrames)
 	if (maxNumOfFrames==0)
 		maxNumOfFrames = dataset.size();
 
-#pragma omp parallel for
 	for (uint i=0; i<maxNumOfFrames; i++) {
 		createFrame(dataset[i]);
 	}
@@ -132,7 +131,7 @@ bool MapBuilder::run (int maxKeyframes)
 }
 
 
-bool MapBuilder::run2 (int maxKeyframes)
+bool MapBuilder::run2 (int startKeyfr, int maxKeyframes)
 {
 	if (maxKeyframes==0)
 		maxKeyframes = dataset.size();
@@ -153,6 +152,7 @@ bool MapBuilder::run2 (int maxKeyframes)
 	}
 
 	cout << "Rebuilding Image DB... ";
+	cout.flush();
 	cMap->getImageDB()->rebuildAll();
 	cout << "Done\n";
 
