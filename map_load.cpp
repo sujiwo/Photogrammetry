@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include "INIReader.h"
 #include "KeyFrame.h"
+#include "MapPoint.h"
 #include "MapBuilder.h"
 #include "optimizer.h"
 
@@ -21,7 +22,12 @@ using namespace Eigen;
 int main (int argc, char *argv[])
 {
 	VMap myMap;
-	myMap.load("/home/sujiwo/maptest.map");
+	myMap.load(string(argv[1]));
+
+	for (auto mid: myMap.getMapPointList()) {
+		auto p = myMap.mappoint(mid)->getPosition();
+		cout << p.x() << " " << p.y() << " " << p.z() << endl;
+	}
 
 	cout << "Done" << endl;
 	return 0;

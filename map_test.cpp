@@ -59,7 +59,15 @@ int main (int argc, char *argv[])
 {
 	MapBuilder mapBuilder ("/home/sujiwo/Data/track");
 	// XXX: Might need to change location
-	mapBuilder.run2();
+
+	int maxFrames;
+	if (argc < 2)
+		maxFrames = 0;
+	else
+		maxFrames = stoi(string(argv[1]));
+
+	mapBuilder.run2(maxFrames);
+
 	bundle_adjustment(mapBuilder.getMap());
 //	mapBuilder.dump("/tmp/test_nba.pcd");
 //	saveCameraPoses(mapBuilder.getMap(), "/tmp/test_nba.txt");
