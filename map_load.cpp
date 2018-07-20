@@ -24,8 +24,8 @@ int main (int argc, char *argv[])
 	VMap myMap;
 	myMap.load(string(argv[1]));
 
-	for (auto mid: myMap.getMapPointList()) {
-		auto p = myMap.mappoint(mid)->getPosition();
+	for (auto mid: myMap.getKeyFrameList()) {
+		auto p = myMap.keyframe(mid)->getPosition();
 		cout << p.x() << " " << p.y() << " " << p.z() << endl;
 	}
 

@@ -74,7 +74,16 @@ target_link_libraries(map_load
 	${REQUIRED_LIBS}
 )
 
-add_library(photogrampy SHARED python_mod.cpp)
+
+if(${OpenCV_VERSION_MAJOR} EQUAL 3)
+	set(PyMatSrc pymat3.cpp)
+else()
+	set(PyMatSrc pymat2.cpp)
+endif()
+
+add_library(photogrampy SHARED 
+	photogrampy.cpp
+	${PyMatSrc})
 set_target_properties(photogrampy PROPERTIES PREFIX "")
 target_link_libraries(photogrampy
 	photogrammetry
