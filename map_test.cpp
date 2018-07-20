@@ -68,7 +68,6 @@ int main (int argc, char *argv[])
 
 	mapBuilder.run2(maxFrames);
 
-	bundle_adjustment(mapBuilder.getMap());
 //	mapBuilder.dump("/tmp/test_nba.pcd");
 //	saveCameraPoses(mapBuilder.getMap(), "/tmp/test_nba.txt");
 	mapBuilder.getMap()->save("/home/sujiwo/maptest.map");

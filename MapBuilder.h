@@ -76,12 +76,12 @@ private:
 //	vector<KeyFrame*> frameList;
 //	vector<MapPoint*> pointList;
 
-	void buildKeyFrames(int maxNumOfFrames=0);
+	void buildKeyFrames(int startIn=0, int maxNumOfFrames=0);
 
 	cv::Mat vocabulary;
 	void trainVocabulary ();
 
-	KeyFrame* createFrame (const DataItem &di,
+	KeyFrame* createKeyFrame (const DataItem &di,
 		kfid setKfId=std::numeric_limits<kfid>::max());
 };
 

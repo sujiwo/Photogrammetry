@@ -59,7 +59,7 @@ public:
 		uint N = this->numOfMapPoints();
 		cv::Mat allPts(N, 3, CV_64F);
 
-		for (uint i=0; i<N; i++) {
+		for (mpid i: this->getMapPointList()) {
 			Vector3d p = this->mappoint(i)->getPosition();
 //			cv::Mat r = allPts.row(i);
 //			copyEigenVector2cv(p, r);
@@ -78,7 +78,7 @@ public:
 		uint N = this->numOfKeyFrames();
 		cv::Mat allKfs(N, 7, CV_64F);
 
-		for (kfid k=0; k<N; k++) {
+		for (kfid k: this->getKeyFrameList()) {
 			Vector3d p = this->keyframe(k)->getPosition();
 			Quaterniond q = this->keyframe(k)->getOrientation();
 			allKfs.row(k).col(0) = p.x();

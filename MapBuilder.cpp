@@ -89,18 +89,18 @@ MapBuilder::~MapBuilder()
 { }
 
 
-void MapBuilder::buildKeyFrames (int maxNumOfFrames)
+void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
 {
 	if (maxNumOfFrames==0)
 		maxNumOfFrames = dataset.size();
 
-	for (uint i=0; i<maxNumOfFrames; i++) {
-		createFrame(dataset[i], i);
+	for (uint i=startInN; i<maxNumOfFrames; i++) {
+		createKeyFrame(dataset[i], i);
 	}
 }
 
 
-KeyFrame* MapBuilder::createFrame (const DataItem &di, kfid setKfId)
+KeyFrame* MapBuilder::createKeyFrame (const DataItem &di, kfid setKfId)
 {
 	KeyFrame *mNewFrame;
 	kfid kfid;
@@ -112,14 +112,14 @@ KeyFrame* MapBuilder::createFrame (const DataItem &di, kfid setKfId)
 
 bool MapBuilder::run (int maxKeyframes)
 {
-	KeyFrame *anchor = createFrame(dataset[0]);
+	KeyFrame *anchor = createKeyFrame(dataset[0]);
 
 	if (maxKeyframes==0)
 		maxKeyframes = dataset.size();
 
 	for (int i=1; i<maxKeyframes; i++) {
 		auto &cdi = dataset[i];
-		KeyFrame *ckey = createFrame(cdi);
+		KeyFrame *ckey = createKeyFrame(cdi);
 
 		// Match with anchor
 		cMap->estimateStructure(anchor->getId(), ckey->getId());
@@ -138,7 +138,7 @@ bool MapBuilder::run2 (int startKeyfr, int maxKeyframes)
 	if (maxKeyframes==0)
 		maxKeyframes = dataset.size();
 	cout << "Initializing...\n";
-	buildKeyFrames(maxKeyframes);
+	buildKeyFrames(startKeyfr, maxKeyframes);
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
@@ -152,6 +152,10 @@ bool MapBuilder::run2 (int startKeyfr, int maxKeyframes)
 		viewer->update(kfList[i]);
 		cout << i << '/' << dataset.size() << endl;
 	}
+
+	cout << "Bundling...";
+	bundle_adjustment(cMap);
+	cout << "Done\n";
 
 	cout << "Rebuilding Image DB... ";
 	cout.flush();
