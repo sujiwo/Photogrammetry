@@ -6,6 +6,7 @@
  */
 
 
+#include <string>
 #include <boost/python.hpp>
 #include <numpy/arrayobject.h>
 #include "VMap.h"
@@ -26,9 +27,16 @@ boost::python::object Eigen2Numpy
 //	PyObject *pyobjx = PyArray_New(&PyArray_Type, 2, dsize, NPY_DOUBLE, NULL, data, 0, NPY_ARRAY_CARRAY, NULL);
 //	boost::python::handle<> h(pyobjx);
 //	return object(h);
-	numeric::array G;
-	G.setshape(M.rows(), M.cols());
-	return G;
+
+//	numeric::array G;
+//	G.setshape(M.rows(), M.cols());
+//	return G;
+}
+
+
+cv::Mat Numpy2CV ()
+{
+
 }
 
 
@@ -81,11 +89,15 @@ testMatrix ()
 }
 
 
+string
+testD ()
+{
+	return string("ABC");
+}
+
+
 BOOST_PYTHON_MODULE(photogrampy)
 {
-	import_array();
-//	import_ufunc();
-
 	class_ <VMapPy> ("VMap")
 
 		.def("load", &VMapPy::load)
@@ -95,5 +107,9 @@ BOOST_PYTHON_MODULE(photogrampy)
 		.def("allMapPoints", &VMapPy::allMapPoints);
 
 	def("testmatrix", &testMatrix);
+
+	def ("testd", &testD);
+
+	import_array();
 }
 
