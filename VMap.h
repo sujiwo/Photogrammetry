@@ -44,8 +44,8 @@ struct CameraPinholeParams {
 
 enum FeatureDetectorT {
 	ORB,
-	SIFT,
-	AKAZE
+	AKAZE,
+	BRISK
 };
 
 enum DescriptorMatcherT {
@@ -68,6 +68,15 @@ struct kpidField : std::vector<bool>
 
 	// A Mask is used to compare keypoints in 1 against 2
 	static cv::Mat createMask (const kpidField &fld1, const kpidField &fld2);
+};
+
+
+struct MapFileHeader {
+	FeatureDetectorT _featureDt;
+	DescriptorMatcherT _descrptMt;
+	uint64
+		numOfKeyFrame,
+		numOfMapPoint;
 };
 
 
@@ -149,6 +158,14 @@ public:
 	{ return imageDB; }
 
 	kfid search (const Frame &f) const;
+
+	static cv::Ptr<cv::FeatureDetector> createFeatureDetector(FeatureDetectorT t);
+
+	cv::Ptr<cv::FeatureDetector> getFeatureDetector () const
+	{ return featureDetector; }
+
+	cv::Ptr<cv::DescriptorMatcher> getDescriptorMatcher () const
+	{ return descriptorMatcher; }
 
 
 protected:

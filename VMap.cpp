@@ -207,13 +207,6 @@ VMap::dumpPointCloudFromMapPoints ()
 }
 
 
-struct MapFileHeader {
-	uint64
-		numOfKeyFrame,
-		numOfMapPoint;
-};
-
-
 bool
 VMap::save(const string &filepath)
 {
@@ -393,6 +386,20 @@ kpidField::countPositive() const
 			n += 1;
 	}
 	return n;
+}
+
+
+cv::Ptr<cv::FeatureDetector>
+VMap::createFeatureDetector(FeatureDetectorT fd)
+{
+	switch (fd) {
+	case FeatureDetectorT::ORB:
+		return cv::ORB::create(6000);
+		break;
+	case FeatureDetectorT::AKAZE:
+		return cv::AKAZE::create();
+		break;
+	}
 }
 
 

@@ -15,17 +15,20 @@ using namespace Eigen;
 
 
 Frame::	Frame(
-	const cv::Mat &imgSrc,
-	cv::Ptr<cv::FeatureDetector> fdetector,
-	const CameraPinholeParams &cPar,
-	const cv::Mat &mask) :
+	cv::Mat &imgSrc,
+	const VMap* parent
+) :
 
 	image(imgSrc),
 	_mPos(Vector3d::Zero()),
 	_mOri(Quaterniond::Identity())
 
 {
-	fdetector->detectAndCompute(image, mask, keypoints, descriptors);
+	parent->getFeatureDetector()->detectAndCompute(
+		image,
+		parent->getMask(),
+		keypoints,
+		descriptors);
 }
 
 

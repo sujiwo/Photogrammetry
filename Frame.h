@@ -27,10 +27,8 @@ class ImageDatabase;
 class Frame
 {
 public:
-	Frame(const cv::Mat &imgSrc,
-		cv::Ptr<cv::FeatureDetector> fdetector,
-		const CameraPinholeParams &cPar,
-		const cv::Mat &mask=cv::Mat());
+	Frame(cv::Mat &imgSrc,
+		const VMap* parent);
 	virtual ~Frame();
 
 	void computeBoW (const ImageDatabase &idb);
