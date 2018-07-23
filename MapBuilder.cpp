@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <thread>
 #include <opencv2/highgui.hpp>
 #include <pcl/io/pcd_io.h>
 
@@ -20,6 +22,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace std::chrono;
 
 
 #define MIN_NEW_POINTS 20
@@ -72,10 +75,6 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 	}
 
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
-//	cv::Ptr<cv::ORB> featureDetector = cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
-//	cv::Ptr<cv::BFMatcher> bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
-
-//	cMap = new VMap(mask, featureDetector, bfMatch);
 	cMap = new VMap(mask, FeatureDetectorT::ORB, DescriptorMatcherT::BruteForce);
 	cMap->setCameraParameters(cparams);
 
@@ -132,14 +131,27 @@ bool MapBuilder::run2 (int startKeyfr, int maxNumOfKeyframes)
 		cout << i << '/' << kfList.size() << endl;
 	}
 
-	cout << "Bundling...";
-	bundle_adjustment(cMap);
-	cout << "Done\n";
+	system_clock::time_point t1 = system_clock::now();
 
-	cout << "Rebuilding Image DB... ";
-	cout.flush();
-	cMap->getImageDB()->rebuildAll();
-	cout << "Done\n";
+	thread ba([this] {
+		cout << "Bundling...";
+		bundle_adjustment(cMap);
+		cout << "Done\n";
+	});
+
+	thread idb([this] {
+		cout << "Rebuilding Image DB... ";
+		cout.flush();
+		cMap->getImageDB()->rebuildAll();
+		cout << "Done\n";
+	});
+
+	ba.join();
+	idb.join();
+
+	system_clock::time_point t2 = system_clock::now();
+	duration<float> td = t2 - t1;
+	cerr << "Time(s): " << td.count() << endl;
 
 	return true;
 }
@@ -151,39 +163,3 @@ void MapBuilder::dump (const std::string &filename)
 		cMap->dumpPointCloudFromMapPoints();
 	pcl::io::savePCDFileBinary(filename, *vizCloud);
 }
-//
-//
-//pointCloudPtr
-//MapBuilder::dumpPointCloud ()
-//{
-//	pointCloudPtr pcv
-//		(new pcl::PointCloud<pcl::PointXYZ>(pointList.size(), 1));
-//
-//	uint i = 0;
-//	for (auto *p: pointList) {
-//		pcv->at(i).x = p->X();
-//		pcv->at(i).y = p->Y();
-//		pcv->at(i).z = p->Z();
-//		i++;
-//	}
-//
-//	return pcv;
-//}
-//
-//
-//void MapBuilder::trainVocabulary()
-//{
-////	Highly doubtful, this number is too low!
-//	cv::BOWKMeansTrainer bowTrainer(MAX_ORB_POINTS_IN_FRAME);
-//	cv::Mat sceneDescriptors;
-//
-//	for (int i=0; i<frameList.size(); i++) {
-//		auto *kf = frameList[i];
-//
-//		for (int j=0; j<kf->numOfKeyPoints(); j++) {
-//			bowTrainer.add(kf->getDescriptorAt(j));
-//		}
-//	}
-//
-//	vocabulary = bowTrainer.cluster();
-//}
