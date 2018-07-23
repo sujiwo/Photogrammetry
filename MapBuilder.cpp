@@ -23,7 +23,6 @@ using namespace Eigen;
 
 
 #define MIN_NEW_POINTS 20
-#define MAX_ORB_POINTS_IN_FRAME 6000
 
 
 typedef Matrix<double,3,4> CameraIntrinsicMatrix;
@@ -73,10 +72,11 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 	}
 
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
-	cv::Ptr<cv::ORB> featureDetector = cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
-	cv::Ptr<cv::BFMatcher> bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
+//	cv::Ptr<cv::ORB> featureDetector = cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
+//	cv::Ptr<cv::BFMatcher> bfMatch = cv::BFMatcher::create(cv::NORM_HAMMING2);
 
-	cMap = new VMap(mask, featureDetector, bfMatch);
+//	cMap = new VMap(mask, featureDetector, bfMatch);
+	cMap = new VMap(mask, FeatureDetectorT::ORB, DescriptorMatcherT::BruteForce);
 	cMap->setCameraParameters(cparams);
 
 	viewer = new Viewer(cMap, &dataset);
@@ -91,10 +91,10 @@ MapBuilder::~MapBuilder()
 
 void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
 {
-	if (maxNumOfFrames==0)
+	if (maxNumOfFrames==0 or startInN + maxNumOfFrames > dataset.size())
 		maxNumOfFrames = dataset.size();
 
-	for (uint i=startInN; i<maxNumOfFrames; i++) {
+	for (uint i=startInN; i<startInN + maxNumOfFrames; i++) {
 		createKeyFrame(dataset[i], i);
 	}
 }
@@ -110,35 +110,12 @@ KeyFrame* MapBuilder::createKeyFrame (const DataItem &di, kfid setKfId)
 }
 
 
-bool MapBuilder::run (int maxKeyframes)
+bool MapBuilder::run2 (int startKeyfr, int maxNumOfKeyframes)
 {
-	KeyFrame *anchor = createKeyFrame(dataset[0]);
-
-	if (maxKeyframes==0)
-		maxKeyframes = dataset.size();
-
-	for (int i=1; i<maxKeyframes; i++) {
-		auto &cdi = dataset[i];
-		KeyFrame *ckey = createKeyFrame(cdi);
-
-		// Match with anchor
-		cMap->estimateStructure(anchor->getId(), ckey->getId());
-
-		anchor = ckey;
-
-		cout << i << '/' << dataset.size() << endl;
-	}
-
-	return true;
-}
-
-
-bool MapBuilder::run2 (int startKeyfr, int maxKeyframes)
-{
-	if (maxKeyframes==0)
-		maxKeyframes = dataset.size();
+	if (maxNumOfKeyframes==0)
+		maxNumOfKeyframes = dataset.size();
 	cout << "Initializing...\n";
-	buildKeyFrames(startKeyfr, maxKeyframes);
+	buildKeyFrames(startKeyfr, maxNumOfKeyframes);
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
@@ -147,10 +124,12 @@ bool MapBuilder::run2 (int startKeyfr, int maxKeyframes)
 	cout << "Map initialized\n";
 	viewer->update(kfList[1]);
 
-	for (int i=2; i<maxKeyframes; i++) {
-		cMap->estimateAndTrack(kfList[i-1], kfList[i]);
-		viewer->update(kfList[i]);
-		cout << i << '/' << dataset.size() << endl;
+	for (int i=2; i<kfList.size(); i++) {
+		kfid fromKfId = kfList[i-1],
+			toKfId = kfList[i];
+		cMap->estimateAndTrack(fromKfId, toKfId);
+		viewer->update(toKfId);
+		cout << i << '/' << kfList.size() << endl;
 	}
 
 	cout << "Bundling...";

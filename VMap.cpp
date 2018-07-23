@@ -28,14 +28,25 @@ VMap::VMap()
 }
 
 
-VMap::VMap(
-	const cv::Mat &m,
-	cv::Ptr<cv::FeatureDetector> fdetect,
-	cv::Ptr<cv::DescriptorMatcher> dmatcher) :
-		featureDetector(fdetect),
-		descriptorMatcher(dmatcher)
+//VMap::VMap(
+//	const cv::Mat &m,
+//	cv::Ptr<cv::FeatureDetector> fdetect,
+//	cv::Ptr<cv::DescriptorMatcher> dmatcher) :
+//		featureDetector(fdetect),
+//		descriptorMatcher(dmatcher)
+//{
+//	mask = m.clone();
+//	imageDB = new ImageDatabase(this);
+//}
+
+
+VMap::VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher) :
+	mask(_mask.clone()),
+	featureDetector(VMap::createFeatureDetector(_fdetector)),
+	descriptorMatcher(VMap::createDescriptorMatcher(_dmatcher))
 {
-	mask = m.clone();
+	curDetector = _fdetector;
+	curDescMatcher = _dmatcher;
 	imageDB = new ImageDatabase(this);
 }
 
@@ -169,7 +180,7 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 vector<kfid>
 VMap::allKeyFrames () const
 {
-	vector<kfid> kfIdList(keyframeInvIdx.size());
+	vector<kfid> kfIdList;
 	for (auto &key: keyframeInvIdx) {
 		kfIdList.push_back(key.first);
 	}
@@ -180,7 +191,7 @@ VMap::allKeyFrames () const
 vector<mpid>
 VMap::allMapPoints () const
 {
-	vector<mpid> mpIdList(mappointInvIdx.size());
+	vector<mpid> mpIdList;
 	for (auto &key: mappointInvIdx) {
 		mpIdList.push_back(key.first);
 	}
@@ -213,6 +224,8 @@ VMap::save(const string &filepath)
 	MapFileHeader header;
 	header.numOfKeyFrame = keyframeInvIdx.size();
 	header.numOfMapPoint = mappointInvIdx.size();
+	header._descrptMt = curDescMatcher;
+	header._featureDt = curDetector;
 
 	fstream mapFileFd;
 	mapFileFd.open (filepath, fstream::out | fstream::trunc);
@@ -257,6 +270,9 @@ VMap::load(const string &filepath)
 
 	KeyFrame *kfArray = new KeyFrame[header.numOfKeyFrame];
 	MapPoint *mpArray = new MapPoint[header.numOfMapPoint];
+
+	this->featureDetector = VMap::createFeatureDetector(header._featureDt);
+	this->descriptorMatcher = VMap::createDescriptorMatcher(header._descrptMt);
 
 	for (int i=0; i<header.numOfKeyFrame; i++) {
 		mapStore >> kfArray[i];
@@ -394,10 +410,21 @@ VMap::createFeatureDetector(FeatureDetectorT fd)
 {
 	switch (fd) {
 	case FeatureDetectorT::ORB:
-		return cv::ORB::create(6000);
+		return cv::ORB::create(MAX_ORB_POINTS_IN_FRAME);
 		break;
 	case FeatureDetectorT::AKAZE:
 		return cv::AKAZE::create();
+		break;
+	}
+}
+
+
+cv::Ptr<cv::DescriptorMatcher>
+VMap::createDescriptorMatcher(DescriptorMatcherT dm)
+{
+	switch (dm) {
+	case DescriptorMatcherT::BruteForce:
+		return cv::BFMatcher::create(cv::NORM_HAMMING2);
 		break;
 	}
 }

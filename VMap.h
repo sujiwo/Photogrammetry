@@ -33,6 +33,9 @@ typedef uint64_t mpid;
 typedef decltype(cv::DMatch::trainIdx) kpid;
 
 
+#define MAX_ORB_POINTS_IN_FRAME 6000
+
+
 struct CameraPinholeParams {
 	double
 		fx, fy,
@@ -84,7 +87,8 @@ class VMap {
 public:
 
 	VMap ();
-	VMap (const cv::Mat &mask, cv::Ptr<cv::FeatureDetector> fdetect, cv::Ptr<cv::DescriptorMatcher> dmatcher);
+	VMap (const cv::Mat &_mask, cv::Ptr<cv::FeatureDetector> fdetect, cv::Ptr<cv::DescriptorMatcher> dmatcher);
+	VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher);
 	virtual ~VMap();
 
 	inline void setCameraParameters (const CameraPinholeParams &vscamIntr)
@@ -160,6 +164,7 @@ public:
 	kfid search (const Frame &f) const;
 
 	static cv::Ptr<cv::FeatureDetector> createFeatureDetector(FeatureDetectorT t);
+	static cv::Ptr<cv::DescriptorMatcher> createDescriptorMatcher(DescriptorMatcherT t);
 
 	cv::Ptr<cv::FeatureDetector> getFeatureDetector () const
 	{ return featureDetector; }
@@ -192,6 +197,8 @@ protected:
 	cv::Mat mask;
 	cv::Ptr<cv::FeatureDetector> featureDetector;
 	cv::Ptr<cv::DescriptorMatcher> descriptorMatcher;
+	FeatureDetectorT curDetector;
+	DescriptorMatcherT curDescMatcher;
 	CameraPinholeParams camera;
 
 	ImageDatabase *imageDB;

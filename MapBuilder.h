@@ -45,13 +45,9 @@ public:
 	MapBuilder(const std::string &datasetDir);
 	virtual ~MapBuilder();
 
-//	const CameraPinholeParamsRead& getCameraParams()
-//	{ return cparams; }
-
 	VMap* getMap()
 	{ return cMap; }
 
-	bool run (int maxKeyframes=0);
 	bool run2 (int startKeyfr=0, int maxKeyframes=0);
 
 	void dump (const std::string &filename);
@@ -67,14 +63,6 @@ private:
 	Viewer *viewer;
 
 	cv::Mat mask;
-
-//	Feature detector, descriptor and matcher
-//	cv::Ptr<cv::ORB> featureDetector;
-//	cv::Ptr<cv::BFMatcher> bfMatch;
-
-	// Map Objects
-//	vector<KeyFrame*> frameList;
-//	vector<MapPoint*> pointList;
 
 	void buildKeyFrames(int startIn=0, int maxNumOfFrames=0);
 
