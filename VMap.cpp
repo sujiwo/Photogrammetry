@@ -57,6 +57,14 @@ VMap::~VMap()
 }
 
 
+int
+VMap::addCameraParameter(const CameraPinholeParams &vsc)
+{
+	cameraList.push_back(vsc);
+	return(cameraList.size() - 1);
+}
+
+
 Matrix<double,3,4> CameraPinholeParams::toMatrix() const
 {
 	Matrix<double,3,4> K = Matrix<double,3,4>::Zero();
@@ -71,10 +79,11 @@ Matrix<double,3,4> CameraPinholeParams::toMatrix() const
 
 kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
+		const int cameraId,
 		KeyFrame **ptr,
 		kfid setId)
 {
-	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &camera, setId);
+	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, setId);
 	kfid nId = nKf->getId();
 	keyframeInvIdx.insert(pair<kfid,KeyFrame*> (nId, nKf));
 
@@ -251,6 +260,8 @@ VMap::save(const string &filepath)
 
 	mapStore << *imageDB;
 
+	mapStore << cameraList;
+
 	return true;
 }
 
@@ -286,6 +297,8 @@ VMap::load(const string &filepath)
 	mapStore >> mask;
 
 	mapStore >> *imageDB;
+
+	mapStore >> cameraList;
 
 	// Rebuild pointers
 	keyframeInvIdx.clear();

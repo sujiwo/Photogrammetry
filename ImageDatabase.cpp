@@ -45,10 +45,10 @@ void
 ImageDatabase::rebuildAll()
 {
 	// 1: Build Map Points' Descriptors
-//#pragma omp parallel
 
-	for (const mpid &mid: cMap->getMapPointList()) {
-
+	const vector<mpid> mapPtList = cMap->getMapPointList();
+	for (int i=0; i<mapPtList.size(); i++) {
+		mpid mid = mapPtList[i];
 		MapPoint *mp = cMap->mappoint(mid);
 		vector<KeyMapPoint> kfkp;
 
@@ -65,7 +65,8 @@ ImageDatabase::rebuildAll()
 	// 2: Rebuild Vocabulary
 	vector<vector<DBoW2::FORB::TDescriptor> > keymapFeatures;
 	keymapFeatures.reserve(cMap->numOfKeyFrames());
-//#pragma omp parallel
+
+//#pragma omp parallel for default(none) private(kid)
 	for (auto &kid: cMap->allKeyFrames()) {
 		vector<cv::Mat> kfDescriptor;
 

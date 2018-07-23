@@ -61,6 +61,7 @@ public:
 			cv::Mat &mask,
 			cv::Ptr<cv::FeatureDetector> fdetector,
 			const CameraPinholeParams *cameraIntr,
+			const int _cameraId,
 			kfid forceId=std::numeric_limits<kfid>::max());
 	virtual ~KeyFrame();
 
@@ -84,14 +85,6 @@ public:
 		std::vector<FeaturePair> &featurePairs
 	);
 
-//	static void matchSubset (
-//		const KeyFrame &k1, const KeyFrame &k2,
-//		cv::Ptr<cv::DescriptorMatcher> matcher,
-//		std::vector<FeaturePair> &featurePairs,
-//		std::set<kpid> kpListInKf1=std::set<kpid>(),
-//		std::set<kpid> kpListInKf2=std::set<kpid>()
-//	);
-
 	static void matchSubset (
 		const KeyFrame &k1, const KeyFrame &k2,
 		cv::Ptr<cv::DescriptorMatcher> matcher,
@@ -111,8 +104,8 @@ public:
 	kfid getId () const
 	{ return id; }
 
-//	const std::vector<MapPoint*>& getVisiblePoints()
-//	{ return visiblePoints; }
+	int getCameraId() const
+	{ return cameraId; }
 
 	Eigen::Matrix<double,3,4> externalParamMatrix () const;
 	Eigen::Matrix4d externalParamMatrix4 () const;
@@ -140,8 +133,6 @@ protected:
 	template <class Archive>
     friend void boost::serialization::serialize (Archive & ar, KeyFrame &keyframe, const unsigned int version);
 
-
-private:
 	kfid id;
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
@@ -151,6 +142,8 @@ private:
 	Eigen::Quaterniond orientation;
 	Eigen::Vector3d normal;
 	Eigen::Matrix<double,3,4> projMatrix;
+
+	int cameraId;
 
 	static kfid nextId;
 

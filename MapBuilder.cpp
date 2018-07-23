@@ -32,6 +32,8 @@ typedef Matrix<double,3,4> CameraIntrinsicMatrix;
 
 const Eigen::Vector3d origin(0,0,0);
 
+static int onlyCamera;
+
 
 MapBuilder::MapBuilder(const string &datasetDir) :
 	cMap(NULL)
@@ -76,7 +78,7 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 
 	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
 	cMap = new VMap(mask, FeatureDetectorT::ORB, DescriptorMatcherT::BruteForce);
-	cMap->setCameraParameters(cparams);
+	onlyCamera = cMap->addCameraParameter(cparams);
 
 	viewer = new Viewer(cMap, &dataset);
 
@@ -104,7 +106,7 @@ KeyFrame* MapBuilder::createKeyFrame (const DataItem &di, kfid setKfId)
 	KeyFrame *mNewFrame;
 	kfid kfid;
 	cv::Mat image = cv::imread(di.imagePath, cv::IMREAD_GRAYSCALE);
-	kfid = cMap->createKeyFrame(image, di.position, di.orientation, &mNewFrame, setKfId);
+	kfid = cMap->createKeyFrame(image, di.position, di.orientation, onlyCamera, &mNewFrame, setKfId);
 	return mNewFrame;
 }
 
@@ -133,21 +135,27 @@ bool MapBuilder::run2 (int startKeyfr, int maxNumOfKeyframes)
 
 	system_clock::time_point t1 = system_clock::now();
 
-	thread ba([this] {
-		cout << "Bundling...";
-		bundle_adjustment(cMap);
-		cout << "Done\n";
-	});
+#pragma omp parallel
+	{
+	#pragma omp sections
+		{
 
-	thread idb([this] {
-		cout << "Rebuilding Image DB... ";
-		cout.flush();
-		cMap->getImageDB()->rebuildAll();
-		cout << "Done\n";
-	});
+		#pragma omp section
+			{
+				cout << "Bundling...";
+				bundle_adjustment(cMap);
+				cout << "Done\n";
+			}
 
-	ba.join();
-	idb.join();
+		#pragma omp section
+			{
+				cout << "Rebuilding Image DB... ";
+				cout.flush();
+				cMap->getImageDB()->rebuildAll();
+				cout << "Done\n";
+			}
+		}
+	}
 
 	system_clock::time_point t2 = system_clock::now();
 	duration<float> td = t2 - t1;

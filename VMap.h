@@ -15,7 +15,7 @@
 #include <Eigen/Eigen>
 #include <limits>
 
-#include <boost/graph/adjacency_list.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d.hpp"
@@ -42,6 +42,10 @@ struct CameraPinholeParams {
 		cx, cy;
 	int width, height;
 	Eigen::Matrix<double,3,4> toMatrix() const;
+
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int file_version)
+	{ ar & fx & fy & cx & cy & width & height; }
 };
 
 
@@ -91,20 +95,23 @@ public:
 	VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher);
 	virtual ~VMap();
 
-	inline void setCameraParameters (const CameraPinholeParams &vscamIntr)
-	{ camera = vscamIntr; }
+	int addCameraParameter (const CameraPinholeParams &vscamIntr);
 
 	const cv::Mat getMask() const
 	{ return mask; }
 
-	inline const CameraPinholeParams getCameraParameters()
-	{ return camera; }
+	inline const CameraPinholeParams getCameraParameter(const int cameraId)
+	{ return cameraList[cameraId]; }
+
+	int getNumberOfCameras () const
+	{ return cameraList.size(); }
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr dumpPointCloudFromMapPoints ();
 
 	kfid createKeyFrame (
 		const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
+		const int cameraId,
 		KeyFrame **ptr=NULL,
 		kfid setId=std::numeric_limits<kfid>::max());
 
@@ -172,6 +179,9 @@ public:
 	cv::Ptr<cv::DescriptorMatcher> getDescriptorMatcher () const
 	{ return descriptorMatcher; }
 
+	std::vector<CameraPinholeParams> getCameraParameters() const
+	{ return cameraList; }
+
 
 protected:
 	cv::Mat vocabulary;
@@ -199,7 +209,8 @@ protected:
 	cv::Ptr<cv::DescriptorMatcher> descriptorMatcher;
 	FeatureDetectorT curDetector;
 	DescriptorMatcherT curDescMatcher;
-	CameraPinholeParams camera;
+
+	std::vector<CameraPinholeParams> cameraList;
 
 	ImageDatabase *imageDB;
 };

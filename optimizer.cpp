@@ -27,6 +27,7 @@ const float thHuber2D = sqrt(5.99);
 const float thHuber3D = sqrt(7.815);
 
 
+// XXX: Wrong
 g2o::SE3Quat toSE3Quat
 (const Eigen::Vector3d &position, const Eigen::Quaterniond &orientation)
 { return g2o::SE3Quat(orientation, position); }
@@ -39,6 +40,7 @@ g2o::SE3Quat toSE3Quat (const KeyFrame &kf)
 }
 
 
+// XXX: Wrong
 void fromSE3Quat(const g2o::SE3Quat &pose,
 	Vector3d &position, Quaterniond &orientation)
 {
@@ -77,11 +79,12 @@ void bundle_adjustment (VMap *orgMap)
     g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
     optimizer.setAlgorithm(solver);
 
-    const CameraPinholeParams camPtr = orgMap->getCameraParameters();
-    g2o::CameraParameters *camParams =
-    	new g2o::CameraParameters(camPtr.fx, Vector2d(camPtr.cx,camPtr.cy), 0);
-    camParams->setId(0);
-    optimizer.addParameter(camParams);
+	// XXX: This routine does not support multiple camera
+	const CameraPinholeParams camPtr = orgMap->getCameraParameter(0);
+	g2o::CameraParameters *camParams =
+		new g2o::CameraParameters(camPtr.fx, Vector2d(camPtr.cx,camPtr.cy), 0);
+	camParams->setId(0);
+	optimizer.addParameter(camParams);
 
 	map<oid, kfid> vertexKfMap;
 	map<kfid, g2o::VertexSE3Expmap*> vertexKfMapInv;
@@ -93,7 +96,6 @@ void bundle_adjustment (VMap *orgMap)
 
 		g2o::VertexSE3Expmap *vKf = new g2o::VertexSE3Expmap();
 		KeyFrame *kf = orgMap->keyframe(kId);
-//		vKf->setEstimate (toSE3Quat(kf->getPosition(), kf->getOrientation()));
 		vKf->setEstimate (toSE3Quat(*kf));
 		vKf->setId(vId);
 		vKf->setFixed(kId<2);
@@ -126,12 +128,6 @@ void bundle_adjustment (VMap *orgMap)
 			edge->cx = camPtr.cx;
 			edge->cy = camPtr.cy;
 
-//			Vector2d ptx1 = edge->cam_project(vKf->estimate().map(mp->getPosition()));
-//			Vector2d ptx2 = kf->project(mp->getPosition());
-//			debugVector(ptx1);
-//			debugVector(ptx2);
-//			exit(1);
-
 			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
 			edge->setInformation(uncertainty);
 			optimizer.addEdge(edge);
@@ -152,7 +148,6 @@ void bundle_adjustment (VMap *orgMap)
 		g2o::VertexSE3Expmap *vKfSE3 = static_cast<g2o::VertexSE3Expmap*> (optimizer.vertex(vId));
 
 		g2o::SE3Quat kfPoseSE3 = vKfSE3->estimate();
-//		fromSE3Quat(kfPoseSE3, kf->getPosition(), kf->getOrientation());
 		fromSE3Quat(kfPoseSE3, *kf);
 	}
 

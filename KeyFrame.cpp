@@ -44,15 +44,18 @@ KeyFrame::KeyFrame()
 
 
 KeyFrame::KeyFrame(
-		const cv::Mat &imgSrc,
+	const cv::Mat &imgSrc,
 	const Vector3d &p, const Eigen::Quaterniond &o,
 	cv::Mat &mask,
 	cv::Ptr<cv::FeatureDetector> fdetector,
 	const CameraPinholeParams *cameraIntr,
+	const int _cameraId,
 	kfid forceId) :
 
 	orientation(o),
-	position(p)
+	position(p),
+	cameraId(_cameraId)
+
 {
 	if (forceId==numeric_limits<kfid>::max()) {
 		id = nextId++;

@@ -142,7 +142,8 @@ void serialize (
 		kf.position &
 		kf.orientation &
 		kf.normal &
-		kf.projMatrix;
+		kf.projMatrix,
+		kf.cameraId;
 }
 
 
