@@ -12,6 +12,7 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Frame.h"
+#include "Localizer.h"
 #include "pymat.h"
 
 
@@ -39,7 +40,7 @@ public:
 	kfid find (PyObject *inp)
 	{
 		cv::Mat minp = matcvt.toMat(inp);
-		Frame f();
+		localizer->detect(minp);
 		return 0;
 	}
 
@@ -92,6 +93,22 @@ public:
 
 		return matcvt.toNDArray(allKfs);
 	}
+
+
+	bool load (const std::string &p)
+	{
+		try {
+			VMap::load (p);
+			localizer = new Localizer(this);
+			return true;
+		} catch(exception &e) {
+			return false;
+		}
+	}
+
+
+protected:
+	Localizer *localizer;
 };
 
 

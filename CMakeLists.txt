@@ -52,6 +52,7 @@ add_library(
 		Viewer.cpp
 		ImageDatabase.cpp
 		Frame.cpp
+		Localizer.cpp
 		triangulation.cpp
 		optimizer.cpp		
 )

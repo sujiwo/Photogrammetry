@@ -7,12 +7,28 @@
 
 #include "Localizer.h"
 
-Localizer::Localizer() {
-	// TODO Auto-generated constructor stub
 
+Localizer::Localizer(VMap *parentMap) :
+	sourceMap(parentMap),
+	featureDetector(parentMap->getFeatureDetector()),
+	imgDb(parentMap->getImageDB())
+{}
+
+
+Localizer::~Localizer()
+{}
+
+
+void
+Localizer::setCameraParameterFromId (int cameraId)
+{
+	localizerCamera = sourceMap->getCameraParameter(cameraId);
 }
 
-Localizer::~Localizer() {
-	// TODO Auto-generated destructor stub
-}
 
+kfid
+Localizer::detect (cv::Mat &frmImg)
+{
+	Frame frm (frmImg, sourceMap);
+	return imgDb->find(frm, true);
+}

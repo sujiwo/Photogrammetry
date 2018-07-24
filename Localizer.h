@@ -14,6 +14,8 @@
 
 #include "VMap.h"
 #include "optimizer.h"
+#include "Frame.h"
+#include "ImageDatabase.h"
 
 
 class Localizer
@@ -24,12 +26,18 @@ public:
 
 	virtual ~Localizer();
 
-	kfid localize (const cv::Mat &frmImg);
+	kfid detect (cv::Mat &frmImg);
+
+	void setCameraParameter (const CameraPinholeParams &c)
+	{ localizerCamera = c; }
 
 	void setCameraParameterFromId (int cameraId);
 
 protected:
 	VMap *sourceMap;
+	ImageDatabase *imgDb;
+
+	cv::Ptr<cv::FeatureDetector> featureDetector;
 
 	CameraPinholeParams localizerCamera;
 };
