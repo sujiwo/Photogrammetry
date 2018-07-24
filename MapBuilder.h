@@ -52,7 +52,10 @@ public:
 
 	void dump (const std::string &filename);
 
+	static CameraPinholeParams loadCameraParamsFromFile(const std::string &f);
+
 //	pointCloudPtr dumpPointCloud ();
+	bool runBADB;
 
 private:
 	std::vector<DataItem> dataset;

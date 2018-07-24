@@ -13,6 +13,7 @@
 #include "KeyFrame.h"
 #include "Frame.h"
 #include "Localizer.h"
+#include "MapBuilder.h"
 #include "pymat.h"
 
 
@@ -42,6 +43,20 @@ public:
 		cv::Mat minp = matcvt.toMat(inp);
 		localizer->detect(minp);
 		return 0;
+	}
+
+
+	bool cameraParams (const string &filename)
+	{
+		try {
+			CameraPinholeParams par
+				= MapBuilder::loadCameraParamsFromFile(filename);
+			if (localizer)
+				localizer->setCameraParameter(par);
+			return true;
+		} catch (exception &e) {
+			return false;
+		}
 	}
 
 
@@ -102,6 +117,7 @@ public:
 			localizer = new Localizer(this);
 			return true;
 		} catch(exception &e) {
+			cerr << e.what() << endl;
 			return false;
 		}
 	}

@@ -35,8 +35,25 @@ const Eigen::Vector3d origin(0,0,0);
 static int onlyCamera;
 
 
+CameraPinholeParams
+MapBuilder::loadCameraParamsFromFile(const string &f)
+{
+	CameraPinholeParams c;
+	INIReader cameraParser(f);
+	c.fx = cameraParser.GetReal("", "fx", 0);
+	c.fy = cameraParser.GetReal("", "fy", 0);
+	c.cx = cameraParser.GetReal("", "cx", 0);
+	c.cy = cameraParser.GetReal("", "cy", 0);
+	c.width = cameraParser.GetInteger("", "width", 0);
+	c.height = cameraParser.GetInteger("", "height", 0);
+
+	return c;
+}
+
+
 MapBuilder::MapBuilder(const string &datasetDir) :
-	cMap(NULL)
+	cMap(NULL),
+	runBADB(true)
 {
 	string groundTruthList = datasetDir + "/pose.txt";
 	ifstream inputfd (groundTruthList.c_str());
@@ -44,13 +61,7 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 		throw std::runtime_error("Unable to open pose ground truth");
 
 	string cameraParamsFile = datasetDir + "/camera.txt";
-	INIReader cameraParser(cameraParamsFile);
-	cparams.fx = cameraParser.GetReal("", "fx", 0);
-	cparams.fy = cameraParser.GetReal("", "fy", 0);
-	cparams.cx = cameraParser.GetReal("", "cx", 0);
-	cparams.cy = cameraParser.GetReal("", "cy", 0);
-	cparams.width = cameraParser.GetInteger("", "width", 0);
-	cparams.height = cameraParser.GetInteger("", "height", 0);
+	cparams = MapBuilder::loadCameraParamsFromFile(cameraParamsFile);
 
 	string line;
 	while (true) {
@@ -71,7 +82,7 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 		cItem.orientation.w() = qw;
 		cItem.imagePath = datasetDir + '/' + std::to_string(iid) + ".png";
 		if (access(cItem.imagePath.c_str(), R_OK) != 0)
-			throw std::runtime_error("No such file");
+			throw std::runtime_error(string("No such file: ")+cItem.imagePath);
 
 		dataset.push_back(cItem);
 	}
@@ -87,7 +98,9 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 
 
 MapBuilder::~MapBuilder()
-{ }
+{
+	delete viewer;
+}
 
 
 void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
@@ -95,7 +108,9 @@ void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
 	if (maxNumOfFrames==0 or startInN + maxNumOfFrames > dataset.size())
 		maxNumOfFrames = dataset.size();
 
+#pragma omp parallel
 	for (uint i=startInN; i<startInN + maxNumOfFrames; i++) {
+		cerr << "ID: " << i << endl;
 		createKeyFrame(dataset[i], i);
 	}
 }
@@ -135,26 +150,23 @@ bool MapBuilder::run2 (int startKeyfr, int maxNumOfKeyframes)
 
 	system_clock::time_point t1 = system_clock::now();
 
-#pragma omp parallel
-	{
-	#pragma omp sections
-		{
+	if (runBADB) {
 
-		#pragma omp section
-			{
-				cout << "Bundling...";
-				bundle_adjustment(cMap);
-				cout << "Done\n";
-			}
+		thread ba([this] {
+					cout << "Bundling...";
+					bundle_adjustment(cMap);
+					cout << "Done\n";
+		});
 
-		#pragma omp section
-			{
-				cout << "Rebuilding Image DB... ";
-				cout.flush();
-				cMap->getImageDB()->rebuildAll();
-				cout << "Done\n";
-			}
-		}
+		thread db([this] {
+					cout << "Rebuilding Image DB... ";
+					cout.flush();
+					cMap->getImageDB()->rebuildAll();
+					cout << "Done\n";
+		});
+
+		ba.join();
+		db.join();
 	}
 
 	system_clock::time_point t2 = system_clock::now();

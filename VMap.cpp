@@ -262,6 +262,7 @@ VMap::save(const string &filepath)
 
 	mapStore << cameraList;
 
+	mapFileFd.close();
 	return true;
 }
 
@@ -313,6 +314,7 @@ VMap::load(const string &filepath)
 		mappointInvIdx.insert(pair<mpid,MapPoint*>(mp->getId(), mp));
 	}
 
+	mapFileFd.close();
 	return true;
 }
 
