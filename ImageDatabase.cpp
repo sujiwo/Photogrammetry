@@ -112,33 +112,29 @@ ImageDatabase::find (Frame &f, bool simple) const
 {
 	f.computeBoW(*this);
 
-	map<kfid, uint> kfRelated;
+	map<kfid, uint> kfCandidates;
+	kfCandidates.clear();
+
 	for (auto &bWrdPtr : f.getWords()) {
 		auto wid = bWrdPtr.first;
+		const set<kfid> &relatedKf = invertedKeywordDb.at(wid);
 
-		try {
-			const set<kfid> &relatedKf = invertedKeywordDb.at(wid);
-			for (const kfid &i: relatedKf) {
-				try {
-					kfRelated.at(i) += 1;
-				} catch (out_of_range&) {
-					kfRelated.at(i) = 1;
-				}
+		for (const kfid &k: relatedKf) {
+
+			try {
+				const uint count = kfCandidates.at(k);
+				kfCandidates.at(k) = count+1;
+
+			} catch (out_of_range&) {
+				kfCandidates[k] = 1;
 			}
-		} catch (out_of_range&) {
-			continue;
 		}
 	}
 
 	if (simple) {
-		uint wCnt=0;
-		kfid mx;
-		for (auto &bPtr: kfRelated) {
-			if (bPtr.second > wCnt) {
-				mx = bPtr.first;
-				wCnt = bPtr.second;
-			}
-		}
-		return mx;
+		auto pt = max_element(kfCandidates.begin(), kfCandidates.end(),
+			[](pair<kfid,uint>i, pair<kfid,uint>j)
+				{return i.second < j.second;});
+		return (*pt).first;
 	}
 }

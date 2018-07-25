@@ -70,10 +70,9 @@ int main (int argc, char *argv[])
 		maxNumOfFrames = stoi(string(argv[2]));
 	}
 
+//	mapBuilder.runBADB = false;
 	mapBuilder.run2(startFrame, maxNumOfFrames);
 
-//	mapBuilder.dump("/tmp/test_nba.pcd");
-//	saveCameraPoses(mapBuilder.getMap(), "/tmp/test_nba.txt");
 	mapBuilder.getMap()->save("/home/sujiwo/maptest.map");
 
 	return 0;

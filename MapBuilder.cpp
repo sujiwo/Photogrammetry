@@ -94,6 +94,8 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 	viewer = new Viewer(cMap, &dataset);
 
 	inputfd.close();
+
+	cerr << "Expected #of frames: " << dataset.size() << endl;
 }
 
 
@@ -108,9 +110,12 @@ void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
 	if (maxNumOfFrames==0 or startInN + maxNumOfFrames > dataset.size())
 		maxNumOfFrames = dataset.size();
 
+// XXX: KeyFrame initializations may not be parallelized as keyframeInvIdx.insert() operation
+// is not thread-safe
+
 #pragma omp parallel
-	for (uint i=startInN; i<startInN + maxNumOfFrames; i++) {
-		cerr << "ID: " << i << endl;
+	for (uint i=startInN, p=0; i<startInN + maxNumOfFrames; i++, p++) {
+		cerr << "Initialize " << p << '/' << maxNumOfFrames << endl;
 		createKeyFrame(dataset[i], i);
 	}
 }

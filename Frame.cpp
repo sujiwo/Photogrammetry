@@ -8,6 +8,7 @@
 #include <vector>
 #include "Frame.h"
 #include "ImageDatabase.h"
+#include "Localizer.h"
 
 
 using namespace std;
@@ -16,7 +17,7 @@ using namespace Eigen;
 
 Frame::	Frame(
 	cv::Mat &imgSrc,
-	const VMap* parent
+	const Localizer* parent
 ) :
 
 	image(imgSrc),
@@ -26,9 +27,11 @@ Frame::	Frame(
 {
 	parent->getFeatureDetector()->detectAndCompute(
 		image,
-		parent->getMask(),
+		// XXX: get a proper mask
+		cv::Mat(),
 		keypoints,
-		descriptors);
+		descriptors,
+		false);
 }
 
 

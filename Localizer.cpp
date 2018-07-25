@@ -8,11 +8,16 @@
 #include "Localizer.h"
 
 
-Localizer::Localizer(VMap *parentMap) :
+Localizer::Localizer(VMap *parentMap, bool emptyMask) :
 	sourceMap(parentMap),
 	featureDetector(parentMap->getFeatureDetector()),
 	imgDb(parentMap->getImageDB())
-{}
+{
+	if (emptyMask==false)
+		setMask(sourceMap->getMask());
+	else
+		setMask(cv::Mat());
+}
 
 
 Localizer::~Localizer()
@@ -29,6 +34,6 @@ Localizer::setCameraParameterFromId (int cameraId)
 kfid
 Localizer::detect (cv::Mat &frmImg)
 {
-	Frame frm (frmImg, sourceMap);
+	Frame frm (frmImg, this);
 	return imgDb->find(frm, true);
 }

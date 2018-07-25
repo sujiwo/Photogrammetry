@@ -22,13 +22,14 @@
 
 
 class ImageDatabase;
+class Localizer;
 
 
 class Frame
 {
 public:
 	Frame(cv::Mat &imgSrc,
-		const VMap* parent);
+		const Localizer* parent);
 	virtual ~Frame();
 
 	void computeBoW (const ImageDatabase &idb);

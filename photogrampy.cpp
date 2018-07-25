@@ -7,6 +7,7 @@
 
 
 #include <boost/python.hpp>
+#include <boost/noncopyable.hpp>
 #include <Eigen/Eigen>
 #include "VMap.h"
 #include "MapPoint.h"
@@ -41,12 +42,12 @@ public:
 	kfid find (PyObject *inp)
 	{
 		cv::Mat minp = matcvt.toMat(inp);
-		localizer->detect(minp);
-		return 0;
+		kfid k = localizer->detect(minp);
+		return k;
 	}
 
 
-	bool cameraParams (const string &filename)
+	bool setCameraParams (const string &filename)
 	{
 		try {
 			CameraPinholeParams par
@@ -60,12 +61,24 @@ public:
 	}
 
 
-	dict info ()
+	dict info () const
 	{
 		dict mapinfo;
 		mapinfo["numKeyframes"] = this->numOfKeyFrames();
 		mapinfo["numMappoints"] = this->numOfMapPoints();
 		return mapinfo;
+	}
+
+
+	dict camera() const
+	{
+		const CameraPinholeParams &cm = localizer->getCamera();
+		dict camera;
+		camera["fx"] = cm.fx;
+		camera["fy"] = cm.fy;
+		camera["cx"] = cm.cx;
+		camera["cy"] = cm.cy;
+		return camera;
 	}
 
 
@@ -155,11 +168,17 @@ BOOST_PYTHON_MODULE(photogrampy)
 
 		.def("load", &VMapPy::load)
 
-		.def("info", &VMapPy::info)
+		.add_property("info", &VMapPy::info)
+
+		.add_property("camera", &VMapPy::camera)
 
 		.def("allMapPoints", &VMapPy::allMapPoints)
 
-		.def("allKeyFrames", &VMapPy::allKeyFrames);
+		.def("allKeyFrames", &VMapPy::allKeyFrames)
+
+		.def("setCameraParams", &VMapPy::setCameraParams)
+
+		.def("find", &VMapPy::find);
 
 	def("test_read", &test_read);
 

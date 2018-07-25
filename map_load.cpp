@@ -3,9 +3,11 @@
 #include <map>
 #include <exception>
 #include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #include "INIReader.h"
 #include "KeyFrame.h"
 #include "MapPoint.h"
+#include "Localizer.h"
 #include "MapBuilder.h"
 #include "optimizer.h"
 
@@ -23,12 +25,14 @@ int main (int argc, char *argv[])
 {
 	VMap myMap;
 	myMap.load(string(argv[1]));
+	Localizer loc(&myMap);
+	loc.setMask(cv::imread("/home/sujiwo/Works/Photogrammetry/test/mask.png"));
+	loc.setCameraParameter(
+		MapBuilder::loadCameraParamsFromFile(
+		"/home/sujiwo/Works/Photogrammetry/test/camera.txt"));
+	cv::Mat image = cv::imread("/home/sujiwo/Works/Photogrammetry/test/test1.png", cv::IMREAD_GRAYSCALE);
+	kfid k = loc.detect(image);
 
-	for (auto mid: myMap.getKeyFrameList()) {
-		auto p = myMap.keyframe(mid)->getPosition();
-		cout << p.x() << " " << p.y() << " " << p.z() << endl;
-	}
-
-	cout << "Done" << endl;
+	cout << "Done: " << k << endl;
 	return 0;
 }

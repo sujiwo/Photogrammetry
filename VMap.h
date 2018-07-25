@@ -14,7 +14,9 @@
 #include <map>
 #include <Eigen/Eigen>
 #include <limits>
+#include <mutex>
 
+#include <boost/noncopyable.hpp>
 #include <boost/serialization/serialization.hpp>
 
 #include "opencv2/opencv.hpp"
@@ -87,7 +89,9 @@ struct MapFileHeader {
 };
 
 
-class VMap {
+class VMap
+
+{
 public:
 
 	VMap ();
@@ -189,7 +193,10 @@ protected:
 //	std::vector<KeyFrame*> keyframeList;
 //	std::vector<MapPoint*> mapPointList;
 
+	std::mutex *keyframeInvIdx_mtx;
 	std::map<kfid, KeyFrame*> keyframeInvIdx;
+
+	std::mutex *mappointInvIdx_mtx;
 	std::map<mpid, MapPoint*> mappointInvIdx;
 
 	// Relationship between MapPoint and KeyFrames

@@ -22,7 +22,11 @@ using namespace Eigen;
 using namespace std;
 
 
-VMap::VMap()
+VMap::VMap() :
+
+	keyframeInvIdx_mtx(new mutex),
+	mappointInvIdx_mtx(new mutex)
+
 {
 	imageDB = new ImageDatabase(this);
 }
@@ -41,9 +45,14 @@ VMap::VMap()
 
 
 VMap::VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher) :
+
 	mask(_mask.clone()),
 	featureDetector(VMap::createFeatureDetector(_fdetector)),
-	descriptorMatcher(VMap::createDescriptorMatcher(_dmatcher))
+	descriptorMatcher(VMap::createDescriptorMatcher(_dmatcher)),
+
+	keyframeInvIdx_mtx(new mutex),
+	mappointInvIdx_mtx(new mutex)
+
 {
 	curDetector = _fdetector;
 	curDescMatcher = _dmatcher;
@@ -85,7 +94,10 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 {
 	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, setId);
 	kfid nId = nKf->getId();
+
+	keyframeInvIdx_mtx->lock();
 	keyframeInvIdx.insert(pair<kfid,KeyFrame*> (nId, nKf));
+	keyframeInvIdx_mtx->unlock();
 
 	if (ptr!=NULL)
 		*ptr = nKf;
@@ -153,7 +165,8 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	// XXX: Output of this function in pairList12 still needs to be filtered
 
 	// Check the matching with projection
-	for (auto &p: pairList12) {
+	for (int i=0; i<pairList12.size(); i++) {
+		auto &p = pairList12[i];
 		const mpid ptId = kf1kp2mp[p.kpid1];
 
 		// Try projection
@@ -235,6 +248,9 @@ VMap::save(const string &filepath)
 	header.numOfMapPoint = mappointInvIdx.size();
 	header._descrptMt = curDescMatcher;
 	header._featureDt = curDetector;
+
+	cerr << "#KF: " << header.numOfKeyFrame << endl;
+	cerr << "#MP: " << header.numOfMapPoint << endl;
 
 	fstream mapFileFd;
 	mapFileFd.open (filepath, fstream::out | fstream::trunc);
