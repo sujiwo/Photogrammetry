@@ -34,7 +34,7 @@ public:
 
 	void computeBoW (const ImageDatabase &idb);
 
-	DBoW2::BowVector& getWords()
+	const DBoW2::BowVector& getWords() const
 	{ return words; }
 
 protected:

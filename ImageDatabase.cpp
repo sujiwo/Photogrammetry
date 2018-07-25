@@ -10,6 +10,7 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Frame.h"
+#include "utilities.h"
 
 
 using namespace std;
@@ -132,9 +133,17 @@ ImageDatabase::find (Frame &f, bool simple) const
 	}
 
 	if (simple) {
-		auto pt = max_element(kfCandidates.begin(), kfCandidates.end(),
-			[](pair<kfid,uint>i, pair<kfid,uint>j)
-				{return i.second < j.second;});
-		return (*pt).first;
+		auto ptr = maximumMapElement(kfCandidates);
+		return ptr.first;
 	}
+
+	// Convert to scoring
+	map<kfid,double> kfCandidateScores(kfCandidates.begin(), kfCandidates.end());
+	for (auto &ptr: kfCandidates) {
+		const kfid &k = ptr.first;
+		kfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
+	}
+
+	auto ptr = maximumMapElement(kfCandidateScores);
+	return ptr.first;
 }

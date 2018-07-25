@@ -12,7 +12,9 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <utility>
 
+using std::pair;
 using std::set;
 using std::map;
 using std::vector;
@@ -106,6 +108,18 @@ inline
 int medianx (const Eigen::VectorXi &v)
 {
 	return median(v);
+}
+
+
+template <typename k, typename v>
+pair<const k,v>
+maximumMapElement(const map<k,v> &maptg)
+{
+	auto p = max_element(maptg.begin(), maptg.end(),
+		[](const pair<k,v> &element1, const pair<k,v> &element2)
+			{return element1.second < element2.second;}
+	);
+	return *p;
 }
 
 #endif /* UTILITIES_H_ */
