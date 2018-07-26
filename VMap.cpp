@@ -15,6 +15,7 @@
 #include "ImageDatabase.h"
 #include "Frame.h"
 #include "utilities.h"
+#include "INIReader.h"
 
 
 
@@ -448,6 +449,23 @@ VMap::createFeatureDetector(FeatureDetectorT fd)
 		break;
 	}
 }
+
+
+CameraPinholeParams
+CameraPinholeParams::loadCameraParamsFromFile(const string &f)
+{
+	CameraPinholeParams c;
+	INIReader cameraParser(f);
+	c.fx = cameraParser.GetReal("", "fx", 0);
+	c.fy = cameraParser.GetReal("", "fy", 0);
+	c.cx = cameraParser.GetReal("", "cx", 0);
+	c.cy = cameraParser.GetReal("", "cy", 0);
+	c.width = cameraParser.GetInteger("", "width", 0);
+	c.height = cameraParser.GetInteger("", "height", 0);
+
+	return c;
+}
+
 
 
 cv::Ptr<cv::DescriptorMatcher>

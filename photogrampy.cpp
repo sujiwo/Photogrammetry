@@ -7,14 +7,13 @@
 
 
 #include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
 #include <Eigen/Eigen>
 #include "VMap.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Frame.h"
 #include "Localizer.h"
-#include "MapBuilder.h"
+#include "MapBuilder2.h"
 #include "pymat.h"
 
 
@@ -35,6 +34,40 @@ void copyEigenVector2cv (const Eigen::Matrix<_Tp,_rows,1> &v, cv::Mat &m)
 }
 
 
+Vector3d toVector3(const boost::python::list &p)
+{
+	return Vector3d (extract<double>(p[0]), extract<double>(p[1]), extract<double>(p[2]));
+}
+
+
+Quaterniond toQuaternion(const boost::python::list &qs)
+{
+	Quaterniond q;
+	q.x() = extract<double>(qs[0]);
+	q.y() = extract<double>(qs[1]);
+	q.z() = extract<double>(qs[2]);
+	q.w() = extract<double>(qs[3]);
+	return q;
+}
+
+
+class InputFramePy : public InputFrame
+{
+public:
+	InputFramePy() {}
+
+	InputFramePy(PyObject *_img, boost::python::list &posl, boost::python::list &ql)
+	{
+		Vector3d pos = toVector3(posl);
+		Quaterniond q = toQuaternion(ql);
+
+		cv::Mat img = matcvt.toMat(_img);
+
+		InputFrame(img, pos, q);
+	}
+};
+
+
 class VMapPy : public VMap
 {
 public:
@@ -51,7 +84,7 @@ public:
 	{
 		try {
 			CameraPinholeParams par
-				= MapBuilder::loadCameraParamsFromFile(filename);
+				= CameraPinholeParams::loadCameraParamsFromFile(filename);
 			if (localizer)
 				localizer->setCameraParameter(par);
 			return true;
@@ -179,6 +212,11 @@ BOOST_PYTHON_MODULE(photogrampy)
 		.def("setCameraParams", &VMapPy::setCameraParams)
 
 		.def("find", &VMapPy::find);
+
+
+	class_ <InputFramePy> ("InputFrame",
+		init<PyObject*,boost::python::list&,boost::python::list&>());
+
 
 	def("test_read", &test_read);
 

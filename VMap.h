@@ -48,6 +48,9 @@ struct CameraPinholeParams {
 	template<class Archive>
 	void serialize(Archive &ar, const unsigned int file_version)
 	{ ar & fx & fy & cx & cy & width & height; }
+
+	static CameraPinholeParams
+	loadCameraParamsFromFile(const std::string &f);
 };
 
 

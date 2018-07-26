@@ -47,6 +47,7 @@ add_library(
 	photogrammetry STATIC
 		VMap.cpp
 		MapBuilder.cpp
+		MapBuilder2.cpp
 		KeyFrame.cpp
 		MapPoint.cpp
 		Viewer.cpp

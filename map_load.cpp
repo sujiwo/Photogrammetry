@@ -24,13 +24,13 @@ using namespace Eigen;
 int main (int argc, char *argv[])
 {
 	VMap myMap;
-	myMap.load(string(argv[1]));
+	myMap.load("/home/sujiwo/maptest.map");
 	Localizer loc(&myMap);
 	loc.setMask(cv::imread("/home/sujiwo/Works/Photogrammetry/test/mask.png"));
 	loc.setCameraParameter(
-		MapBuilder::loadCameraParamsFromFile(
+		CameraPinholeParams::loadCameraParamsFromFile(
 		"/home/sujiwo/Works/Photogrammetry/test/camera.txt"));
-	cv::Mat image = cv::imread("/home/sujiwo/Works/Photogrammetry/test/test1.png", cv::IMREAD_GRAYSCALE);
+	cv::Mat image = cv::imread("/home/sujiwo/Works/Photogrammetry/test/test2.png", cv::IMREAD_GRAYSCALE);
 	kfid k = loc.detect(image);
 
 	cout << "Done: " << k << endl;

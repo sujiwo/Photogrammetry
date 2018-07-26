@@ -12,7 +12,6 @@
 #include <opencv2/highgui.hpp>
 #include <pcl/io/pcd_io.h>
 
-#include "INIReader.h"
 #include "KeyFrame.h"
 #include "MapBuilder.h"
 #include "Viewer.h"
@@ -35,25 +34,9 @@ const Eigen::Vector3d origin(0,0,0);
 static int onlyCamera;
 
 
-CameraPinholeParams
-MapBuilder::loadCameraParamsFromFile(const string &f)
-{
-	CameraPinholeParams c;
-	INIReader cameraParser(f);
-	c.fx = cameraParser.GetReal("", "fx", 0);
-	c.fy = cameraParser.GetReal("", "fy", 0);
-	c.cx = cameraParser.GetReal("", "cx", 0);
-	c.cy = cameraParser.GetReal("", "cy", 0);
-	c.width = cameraParser.GetInteger("", "width", 0);
-	c.height = cameraParser.GetInteger("", "height", 0);
-
-	return c;
-}
-
-
 MapBuilder::MapBuilder(const string &datasetDir) :
-	cMap(NULL),
-	runBADB(true)
+	cMap(NULL)
+
 {
 	string groundTruthList = datasetDir + "/pose.txt";
 	ifstream inputfd (groundTruthList.c_str());
@@ -61,7 +44,7 @@ MapBuilder::MapBuilder(const string &datasetDir) :
 		throw std::runtime_error("Unable to open pose ground truth");
 
 	string cameraParamsFile = datasetDir + "/camera.txt";
-	cparams = MapBuilder::loadCameraParamsFromFile(cameraParamsFile);
+	cparams = CameraPinholeParams::loadCameraParamsFromFile(cameraParamsFile);
 
 	string line;
 	while (true) {
