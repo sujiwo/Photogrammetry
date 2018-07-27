@@ -84,8 +84,8 @@ else()
 endif()
 
 add_library(photogrampy SHARED 
-	photogrampy.cpp
-	${PyMatSrc})
+	python/photogrampy.cpp
+	python/${PyMatSrc})
 set_target_properties(photogrampy PROPERTIES PREFIX "")
 target_link_libraries(photogrampy
 	photogrammetry
