@@ -38,7 +38,7 @@ include_directories (
 set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
-	boost_serialization
+	Boost::serialization
 	g2o
 	DBoW2
 )
@@ -90,5 +90,4 @@ set_target_properties(photogrampy PROPERTIES PREFIX "")
 target_link_libraries(photogrampy
 	photogrammetry
 	${REQUIRED_LIBS}
-	boost_python
 )

@@ -41,6 +41,13 @@ Vector3d toVector3(const boost::python::list &p)
 }
 
 
+//Vector3d toVector3(const PyArrayObject *v)
+//{
+//	Vector3d vr;
+//	vr.x() = extract<double>(v[0]);
+//}
+
+
 Quaterniond toQuaternion(const boost::python::list &qs)
 {
 	Quaterniond q;
@@ -170,26 +177,30 @@ public:
 		image = matcvt.toMat(_img);
 	}
 
-	void
+	boost::python::list
 	getpos()
 	{
-		cout << position.x() << " " << position.y() << " " << position.z() << endl;
+		boost::python::list l;
+		l.append(position[0]);
+		l.append(position[1]);
+		l.append(position[2]);
+		return l;
 	}
-
 };
 
 
 class MapBuilderPy : public MapBuilder2
 {
+public:
 	void initialize (const InputFramePy &f1, const InputFramePy &f2)
 	{
-
+		MapBuilder2::initialize(f1, f2);
 	}
 
-	void initialize (PyObject *f1, PyObject *f2)
-	{
-
-	}
+//	void initialize (PyObject *f1, PyObject *f2)
+//	{
+//
+//	}
 
 	void track (const InputFrame &f)
 	{
@@ -229,26 +240,22 @@ BOOST_PYTHON_MODULE(photogrampy)
 //	import_ufunc();
 
 	class_ <VMapPy> ("VMap")
-
 		.def("load", &VMapPy::load)
-
 		.add_property("info", &VMapPy::info)
-
 		.add_property("camera", &VMapPy::camera)
-
 		.def("allMapPoints", &VMapPy::allMapPoints)
-
 		.def("allKeyFrames", &VMapPy::allKeyFrames)
-
 		.def("setCameraParams", &VMapPy::setCameraParams)
-
 		.def("find", &VMapPy::find);
 
 
 	class_ <InputFramePy> ("InputFrame",
 		init<PyObject*,boost::python::list&,boost::python::list&>())
-
 		.def("getpos", &InputFramePy::getpos);
+
+
+	class_ <MapBuilderPy> ("MapBuilder")
+		.def("initialize", &MapBuilderPy::initialize);
 
 
 	def("test_read", &test_read);
