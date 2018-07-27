@@ -16,18 +16,15 @@
 #include "VMap.h"
 
 
-struct InputFrame {
+class InputFrame {
+public:
 	cv::Mat image;
-	Eigen::Vector3d position;
-	Eigen::Quaterniond orientation;
+	Eigen::Vector3d position = Eigen::Vector3d::Zero();
+	Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
 	bool positionIsValid = true;
 	uint cameraId = 0;
 
-	InputFrame() :
-		image(cv::Mat()),
-		position(Eigen::Vector3d::Zero()),
-		orientation(Eigen::Quaterniond::Identity())
-	{}
+	InputFrame() {}
 
 	InputFrame (const cv::Mat &i, const Eigen::Vector3d &p, const Eigen::Quaterniond &o) :
 		image(i),

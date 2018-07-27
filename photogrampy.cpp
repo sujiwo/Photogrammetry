@@ -7,6 +7,7 @@
 
 
 #include <boost/python.hpp>
+#include <iostream>
 #include <Eigen/Eigen>
 #include "VMap.h"
 #include "MapPoint.h"
@@ -49,23 +50,6 @@ Quaterniond toQuaternion(const boost::python::list &qs)
 	q.w() = extract<double>(qs[3]);
 	return q;
 }
-
-
-class InputFramePy : public InputFrame
-{
-public:
-	InputFramePy() {}
-
-	InputFramePy(PyObject *_img, boost::python::list &posl, boost::python::list &ql)
-	{
-		Vector3d pos = toVector3(posl);
-		Quaterniond q = toQuaternion(ql);
-
-		cv::Mat img = matcvt.toMat(_img);
-
-		InputFrame(img, pos, q);
-	}
-};
 
 
 class VMapPy : public VMap
@@ -174,6 +158,53 @@ protected:
 };
 
 
+class InputFramePy : public InputFrame
+{
+public:
+	InputFramePy() {}
+
+	InputFramePy(PyObject *_img, boost::python::list &posl, boost::python::list &ql)
+	{
+		position = toVector3(posl);
+		orientation = toQuaternion(ql);
+		image = matcvt.toMat(_img);
+	}
+
+	void
+	getpos()
+	{
+		cout << position.x() << " " << position.y() << " " << position.z() << endl;
+	}
+
+};
+
+
+class MapBuilderPy : public MapBuilder2
+{
+	void initialize (const InputFramePy &f1, const InputFramePy &f2)
+	{
+
+	}
+
+	void initialize (PyObject *f1, PyObject *f2)
+	{
+
+	}
+
+	void track (const InputFrame &f)
+	{
+
+	}
+
+	VMap* getMap()
+	{ return cMap; }
+
+	void addCameraParam (const CameraPinholeParams &c)
+	{ cMap->addCameraParameter(c); }
+
+};
+
+
 void
 test_read (PyObject *arr)
 {
@@ -215,7 +246,9 @@ BOOST_PYTHON_MODULE(photogrampy)
 
 
 	class_ <InputFramePy> ("InputFrame",
-		init<PyObject*,boost::python::list&,boost::python::list&>());
+		init<PyObject*,boost::python::list&,boost::python::list&>())
+
+		.def("getpos", &InputFramePy::getpos);
 
 
 	def("test_read", &test_read);
