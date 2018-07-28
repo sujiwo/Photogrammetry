@@ -33,6 +33,9 @@ include_directories (
 	
 	g2o
 	DBoW2
+	
+	include
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(REQUIRED_LIBS
@@ -45,21 +48,21 @@ set(REQUIRED_LIBS
 
 add_library(
 	photogrammetry STATIC
-		VMap.cpp
-		MapBuilder.cpp
-		MapBuilder2.cpp
-		KeyFrame.cpp
-		MapPoint.cpp
-		Viewer.cpp
-		ImageDatabase.cpp
-		Frame.cpp
-		Localizer.cpp
-		triangulation.cpp
-		optimizer.cpp		
+		src/VMap.cpp
+		src/MapBuilder.cpp
+		src/MapBuilder2.cpp
+		src/KeyFrame.cpp
+		src/MapPoint.cpp
+		src/Viewer.cpp
+		src/ImageDatabase.cpp
+		src/Frame.cpp
+		src/Localizer.cpp
+		src/triangulation.cpp
+		src/optimizer.cpp		
 )
 
 add_executable (map_test
-	map_test.cpp
+	src/map_test.cpp
 )
 
 target_link_libraries (map_test
@@ -68,7 +71,7 @@ target_link_libraries (map_test
 )
 
 add_executable(map_load
-	map_load.cpp
+	src/map_load.cpp
 )
 
 target_link_libraries(map_load
