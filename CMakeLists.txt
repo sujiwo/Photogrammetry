@@ -58,7 +58,8 @@ add_library(
 		src/Frame.cpp
 		src/Localizer.cpp
 		src/triangulation.cpp
-		src/optimizer.cpp		
+		src/optimizer.cpp
+		src/OxfordDataset.cpp		
 )
 
 add_executable (map_test
@@ -97,7 +98,15 @@ target_link_libraries(photogrampy
 
 
 # These are experimental targets
-add_executable(table_creator
-	src/table_creator.cpp
+add_executable(map_oxford
+	src/map_oxford.cpp
 )
 
+target_link_libraries(map_oxford
+	photogrammetry
+	${REQUIRED_LIBS}
+)
+
+#add_executable(table_creator
+#	src/table_creator.cpp
+#)

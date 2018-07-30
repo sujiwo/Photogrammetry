@@ -11,10 +11,14 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <tuple>
+#include <array>
+#include <set>
 
 
 #include "VMap.h"
 #include "utilities.h"
+
 
 
 enum GroundTruthSrc {
@@ -30,6 +34,34 @@ const double
 	OriginCorrectionEasting = -620248.53,
 	OriginCorrectionNorthing = -5734882.47;
 
+struct StereoImagePath: public std::array <std::string,3>
+{
+public:
+	enum {
+		LEFT=0,
+		CENTER=1,
+		RIGHT=2
+	};
+};
+
+
+struct GpsPose
+{
+	uint64_t timestamp;
+	double
+		easting,
+		northing,
+		altitude,
+		latitude,
+		longitude;
+};
+
+
+struct TTransform
+{
+	Eigen::Vector3d position;
+	Eigen::Quaterniond orientation;
+};
 
 
 class OxfordDataset
@@ -50,10 +82,19 @@ protected:
 
 	std::string oxPath;
 
+	std::vector<uint64_t> stereoTimestamps;
+	std::vector<StereoImagePath> stereoImagePaths;
+	std::map<uint64_t,TTransform> stereoGroundTruths;
+
+	std::vector<GpsPose> gpsPoseTable;
+	std::vector<uint64_t> gpsTimestamps;
+
 private:
 	void loadIns ();
 	void loadGps ();
 	void loadTimestamps ();
+
+	void createStereoGroundTruths();
 };
 
-#endif /* INCLUDE_OXFORDDATASET_H_ */
+#endif /* _OXFORDDATASET_H_ */
