@@ -94,3 +94,10 @@ target_link_libraries(photogrampy
 	photogrammetry
 	${REQUIRED_LIBS}
 )
+
+
+# These are experimental targets
+add_executable(table_creator
+	src/table_creator.cpp
+)
+

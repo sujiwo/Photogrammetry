@@ -13,11 +13,22 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 
 using std::pair;
 using std::set;
 using std::map;
 using std::vector;
+
+
+
+struct DataItem {
+	std::string imagePath;
+	Eigen::Vector3d position;
+	Eigen::Quaterniond orientation;
+};
 
 
 template<typename P, typename Q>

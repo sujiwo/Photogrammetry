@@ -21,15 +21,8 @@
 #include "KeyFrame.h"
 #include "MapPoint.h"
 #include "VMap.h"
+#include "utilities.h"
 
-
-
-
-struct DataItem {
-	std::string imagePath;
-	Eigen::Vector3d position;
-	Eigen::Quaterniond orientation;
-};
 
 
 class Viewer;
