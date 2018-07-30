@@ -20,6 +20,10 @@
 #include "utilities.h"
 
 
+/*
+ * XXX: Oxford Timestamp is in Microsecond
+ */
+
 
 enum GroundTruthSrc {
 	GPS,
@@ -57,6 +61,15 @@ struct GpsPose
 };
 
 
+struct InsPose : public GpsPose
+{
+	double
+		roll,
+		pitch,
+		yaw;
+};
+
+
 struct TTransform
 {
 	Eigen::Vector3d position;
@@ -87,7 +100,10 @@ protected:
 	std::map<uint64_t,TTransform> stereoGroundTruths;
 
 	std::vector<GpsPose> gpsPoseTable;
-	std::vector<uint64_t> gpsTimestamps;
+//	std::vector<uint64_t> gpsTimestamps;
+
+	std::vector<InsPose> insPoseTable;
+//	std::vector<uint64_t> insTimestamps;
 
 private:
 	void loadIns ();
