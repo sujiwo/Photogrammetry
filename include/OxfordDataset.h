@@ -70,10 +70,37 @@ struct InsPose : public GpsPose
 };
 
 
-struct TTransform
+//struct TTransform
+//{
+//	Eigen::Vector3d position;
+//	Eigen::Quaterniond orientation;
+//
+//	Transform3d toEig();
+//};
+
+
+struct TTransform : public Eigen::Affine3d
 {
-	Eigen::Vector3d position;
-	Eigen::Quaterniond orientation;
+	TTransform()
+	{ m_matrix = Eigen::Matrix4d::Identity(); }
+
+	TTransform(const Eigen::Affine3d &a)
+	{ m_matrix = a.matrix(); }
+
+	static TTransform from_XYZ_RPY
+		(const Eigen::Vector3d &pos,
+		double roll=0, double pitch=0, double yaw=0);
+
+	static TTransform from_Pos_Quat
+		(const Eigen::Vector3d &pos,
+			const Eigen::Quaterniond &ori
+				=Eigen::Quaterniond::Identity());
+
+	inline const Vector3d position() const
+	{ return this->translation(); }
+
+	const Quaterniond orientation() const
+	{ return Eigen::Quaterniond(this->rotation()); }
 };
 
 
@@ -87,6 +114,8 @@ public:
 
 	CameraPinholeParams getCameraParameter() const
 	{ return oxfCamera; }
+
+	void dumpGroundTruth(const std::string &fp=std::string());
 
 protected:
 	std::vector<DataItem> records;

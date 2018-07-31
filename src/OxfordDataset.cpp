@@ -22,6 +22,20 @@ static const set<int> GpsColumns ({0,9,8,4,2,3});
 static const set<int> InsColumns ({0,6,5,4,12,13,14,10,9,11,2,3});
 
 
+/*
+ * Transformation from INS to stereo camera
+ * Might be inaccurate
+ */
+static const TTransform
+baseLinkToOffset = TTransform::from_Pos_Quat(
+	Vector3d (0.0, 1.720, 1.070),
+	Quaterniond (0.721, -0.693, 0.007, 0.003));
+//{
+//	Vector3d (0.0, 1.720, 1.070),
+//	Quaterniond (0.721, -0.693, 0.007, 0.003)
+//};
+
+
 OxfordDataset::OxfordDataset(const std::string &dirpath, GroundTruthSrc gts) :
 	oxPath (dirpath)
 {
@@ -111,12 +125,13 @@ void OxfordDataset::loadTimestamps()
 
 TTransform fromINS(const InsPose &ps)
 {
-	TTransform px;
-	px.position = Vector3d(ps.easting, ps.northing, ps.altitude);
-	px.position.x() += OriginCorrectionEasting;
-	px.position.y() += OriginCorrectionNorthing;
-	px.orientation = fromRPY(ps.roll, ps.pitch, ps.yaw);
-	return px;
+	return TTransform::from_XYZ_RPY(
+		Vector3d(
+			ps.easting + OriginCorrectionEasting,
+			ps.northing + OriginCorrectionNorthing,
+			ps.altitude),
+		ps.roll, ps.pitch, ps.yaw
+	);
 }
 
 
@@ -126,16 +141,16 @@ TTransform interpolateFromINS (
 	const InsPose &ps2)
 {
 	assert(timestamp >= ps1.timestamp and timestamp<=ps2.timestamp);
-	TTransform px;
 
 	TTransform px1 = fromINS(ps1),
 		px2 = fromINS(ps2);
 
 	double ratio = double(timestamp - ps1.timestamp) / double(ps2.timestamp - ps1.timestamp);
-	px.position = px1.position + ratio * (px2.position - px1.position);
-	px.orientation = px1.orientation.slerp(ratio, px2.orientation);
+	Vector3d px_pos = px1.position() + ratio * (px2.position() - px1.position());
+	Quaterniond px_or = px1.orientation().slerp(ratio, px2.orientation());
+	px_or.normalize();
 
-	return px;
+	return TTransform::from_Pos_Quat(px_pos, px_or);
 }
 
 
@@ -159,7 +174,6 @@ OxfordDataset::createStereoGroundTruths()
 		uint64_t ts = stereoTimestamps[i];
 		TTransform px;
 
-		// edge case min
 		if (ts < insPoseTable[0].timestamp) {
 			px = fromINS(insPoseTable[0]);
 		}
@@ -170,20 +184,68 @@ OxfordDataset::createStereoGroundTruths()
 
 		else {
 			decltype(Itx) Itx_prev;
-//			while(ts < (*Itx).first) {
-//				Itx_prev = Itx;
-//				Itx++;
-//			}
 			do {
 				Itx_prev = Itx;
-				Itx++;
-			} while (ts < (*Itx).first);
+				++Itx;
+			} while (ts > (*Itx).first and Itx!=tsFinder.end());
 
-			px = interpolateFromINS(ts,
-				*((*Itx_prev).second),
-				*((*Itx).second));
+			const uint64_t ts1 = (*Itx_prev).first,
+				ts2 = (*Itx).first;
+			const InsPose& ps1 = *tsFinder[ts1],
+				&ps2 = *tsFinder[ts2];
+
+			px = interpolateFromINS(ts, ps1, ps2);
 		}
 
+		// Transform INS position to camera
+//		px = baseLinkToOffset * px;
+
 		stereoGroundTruths.insert(make_pair(ts, px));
+	}
+}
+
+
+TTransform
+TTransform::from_XYZ_RPY (
+	const Eigen::Vector3d &pos,
+	double roll, double pitch, double yaw)
+{
+	Quaterniond q = fromRPY(roll, pitch, yaw);
+	return TTransform::from_Pos_Quat(pos, q);
+}
+
+
+TTransform
+TTransform::from_Pos_Quat(const Vector3d &pos, const Quaterniond &orient)
+{
+	Affine3d t;
+	t = Eigen::Translation3d(pos) * orient;
+	return t;
+}
+
+
+void OxfordDataset::dumpGroundTruth(const string &fp)
+{
+	const char dumpSep = ',';
+	ostream *fd;
+	ofstream fdr;
+	if (fp.size()==0)
+		fd = &cout;
+	else {
+		fdr.open(fp);
+		fd = &fdr;
+	}
+
+	for (int i=0; i<stereoTimestamps.size(); i++) {
+		auto t = stereoTimestamps[i];
+		auto trans = stereoGroundTruths[t];
+		*fd << trans.position().x()
+			<< dumpSep << trans.position().y()
+			<< dumpSep << trans.position().z()
+			<< dumpSep << trans.orientation().x()
+			<< dumpSep << trans.orientation().y()
+			<< dumpSep << trans.orientation().z()
+			<< dumpSep << trans.orientation().w()
+			<< endl;
 	}
 }

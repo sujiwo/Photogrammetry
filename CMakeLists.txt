@@ -59,7 +59,8 @@ add_library(
 		src/Localizer.cpp
 		src/triangulation.cpp
 		src/optimizer.cpp
-		src/OxfordDataset.cpp		
+		src/OxfordDataset.cpp
+		src/utilities.cpp	
 )
 
 add_executable (map_test

@@ -51,6 +51,9 @@ struct CameraPinholeParams {
 
 	static CameraPinholeParams
 	loadCameraParamsFromFile(const std::string &f);
+
+	CameraPinholeParams
+	operator* (const float f) const;
 };
 
 

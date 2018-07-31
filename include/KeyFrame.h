@@ -22,6 +22,7 @@
 #include "VMap.h"
 #include "MapPoint.h"
 #include "triangulation.h"
+#include "utilities.h"
 
 
 namespace boost {
@@ -126,6 +127,9 @@ public:
 	{ return orientation; }
 
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
+
+//	Transform3d toEigen()
+//	{ return Transform3d::fromPositionOrientationScale(Eigen::Translation3d(position), orientation, Eigen::Scaling(1.0)); }
 
 
 protected:

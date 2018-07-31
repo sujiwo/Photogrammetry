@@ -7,15 +7,18 @@
 
 
 #include <iostream>
+#include <Eigen/Eigen>
+#include <Eigen/Geometry>
 #include "OxfordDataset.h"
 
 
 using namespace std;
+using namespace Eigen;
 
 
 int main (int argc, char *argv[])
 {
 	OxfordDataset oxf(argv[1]);
-
+	oxf.dumpGroundTruth();
 	return 0;
 }

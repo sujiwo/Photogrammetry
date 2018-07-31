@@ -467,6 +467,21 @@ CameraPinholeParams::loadCameraParamsFromFile(const string &f)
 }
 
 
+CameraPinholeParams
+CameraPinholeParams::operator* (const float r) const
+{
+	CameraPinholeParams n = *this;
+	n.width *= r;
+	n.height *= r;
+	n.fx *= r;
+	n.fy *= r;
+	n.cx *= r;
+	n.cy *= r;
+
+	return n;
+}
+
+
 
 cv::Ptr<cv::DescriptorMatcher>
 VMap::createDescriptorMatcher(DescriptorMatcherT dm)

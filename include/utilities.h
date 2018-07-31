@@ -13,6 +13,8 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <limits>
+#include <algorithm>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -25,12 +27,14 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 
 
-
 struct DataItem {
 	std::string imagePath;
 	Eigen::Vector3d position;
 	Eigen::Quaterniond orientation;
 };
+
+
+typedef Eigen::Affine3d Transform3d;
 
 
 template<typename P, typename Q>
@@ -139,39 +143,10 @@ maximumMapElement(const map<k,v> &maptg)
 /*
  * All angles are in Radian
  */
-inline Quaterniond fromRPY (double roll, double pitch, double yaw)
-{
-	int
-		i = 0,
-		j = 1,
-		k = 2;
+Quaterniond fromRPY (double roll, double pitch, double yaw);
 
-	roll /= 2.0;
-	pitch /= 2.0;
-	yaw /= 2.0;
-	double
-		ci = cos(roll),
-		si = sin(roll),
-		cj = cos(pitch),
-		sj = sin(pitch),
-		ck = cos(yaw),
-		sk = sin(yaw),
-		cc = ci*ck,
-		cs = ci*sk,
-		sc = si*ck,
-		ss = si*sk;
-	Quaterniond q;
-	q.x() = cj*sc - sj*cs;
-	q.y() = cj*ss + sj*cc;
-	q.z() = cj*cs - sj*sc;
-	q.w() = cj*cc + sj*ss;
-	return q;
-}
+Vector3d quaternionToRPY (const Quaterniond &q);
 
 
-inline Vector3d quaternionToRPY (const Quaterniond &q)
-{
-
-}
 
 #endif /* UTILITIES_H_ */
