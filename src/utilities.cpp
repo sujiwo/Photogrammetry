@@ -8,6 +8,10 @@
 #include "utilities.h"
 
 
+using namespace std;
+using namespace Eigen;
+
+
 Quaterniond fromRPY (double roll, double pitch, double yaw)
 {
 	roll /= 2.0;
@@ -26,9 +30,10 @@ Quaterniond fromRPY (double roll, double pitch, double yaw)
 		ss = si*sk;
 	Quaterniond q;
 	q.x() = cj*sc - sj*cs;
-	q.y() = cj*ss + sj*cc;
-	q.z() = cj*cs - sj*sc;
+	q.z() = cj*ss + sj*cc;
+	q.y() = cj*cs - sj*sc;
 	q.w() = cj*cc + sj*ss;
+	q.normalize();
 	return q;
 }
 
@@ -50,4 +55,23 @@ Vector3d quaternionToRPY (const Quaterniond &q)
         az = 0.0;
 	}
 	return Vector3d(ax, ay, az);
+}
+
+
+TTransform
+TTransform::from_XYZ_RPY (
+	const Eigen::Vector3d &pos,
+	double roll, double pitch, double yaw)
+{
+	Quaterniond q = fromRPY(roll, pitch, yaw);
+	return TTransform::from_Pos_Quat(pos, q);
+}
+
+
+TTransform
+TTransform::from_Pos_Quat(const Vector3d &pos, const Quaterniond &orient)
+{
+	Affine3d t;
+	t = Eigen::Translation3d(pos) * orient;
+	return t;
 }

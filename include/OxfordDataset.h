@@ -79,31 +79,6 @@ struct InsPose : public GpsPose
 //};
 
 
-struct TTransform : public Eigen::Affine3d
-{
-	TTransform()
-	{ m_matrix = Eigen::Matrix4d::Identity(); }
-
-	TTransform(const Eigen::Affine3d &a)
-	{ m_matrix = a.matrix(); }
-
-	static TTransform from_XYZ_RPY
-		(const Eigen::Vector3d &pos,
-		double roll=0, double pitch=0, double yaw=0);
-
-	static TTransform from_Pos_Quat
-		(const Eigen::Vector3d &pos,
-			const Eigen::Quaterniond &ori
-				=Eigen::Quaterniond::Identity());
-
-	inline const Vector3d position() const
-	{ return this->translation(); }
-
-	const Quaterniond orientation() const
-	{ return Eigen::Quaterniond(this->rotation()); }
-};
-
-
 class OxfordDataset
 {
 public:

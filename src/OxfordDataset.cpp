@@ -29,11 +29,9 @@ static const set<int> InsColumns ({0,6,5,4,12,13,14,10,9,11,2,3});
 static const TTransform
 baseLinkToOffset = TTransform::from_Pos_Quat(
 	Vector3d (0.0, 1.720, 1.070),
-	Quaterniond (0.721, -0.693, 0.007, 0.003));
-//{
-//	Vector3d (0.0, 1.720, 1.070),
-//	Quaterniond (0.721, -0.693, 0.007, 0.003)
-//};
+	// W, X, Y, Z
+	Quaterniond (0.691, -0.723, 0.007, 0.002));
+
 
 
 OxfordDataset::OxfordDataset(const std::string &dirpath, GroundTruthSrc gts) :
@@ -109,16 +107,17 @@ void OxfordDataset::loadTimestamps()
 	stereoImagePaths.resize(ss);
 
 	for (uint32_t i=0; i<ss; i++) {
-		stereoTimestamps[i] = stoul(TS.get(i,0));
+		const string &tsstr = TS.get(i,0);
+		stereoTimestamps[i] = stoul(tsstr);
 
 		const string
 			ctrname = oxPath + "/stereo/centre",
         	lftname = oxPath + "/stereo/left",
 			rhtname = oxPath + "/stereo/right";
 
-		stereoImagePaths[i][StereoImagePath::LEFT] = lftname + '/' + TS.get(i,0) + ".png";
-		stereoImagePaths[i][StereoImagePath::CENTER] = ctrname + '/' + TS.get(i,0) + ".png";
-		stereoImagePaths[i][StereoImagePath::RIGHT] = rhtname + '/' + TS.get(i,0) + ".png";
+		stereoImagePaths[i][StereoImagePath::LEFT] = lftname + '/' + tsstr + ".png";
+		stereoImagePaths[i][StereoImagePath::CENTER] = ctrname + '/' + tsstr + ".png";
+		stereoImagePaths[i][StereoImagePath::RIGHT] = rhtname + '/' + tsstr + ".png";
 	}
 }
 
@@ -198,29 +197,10 @@ OxfordDataset::createStereoGroundTruths()
 		}
 
 		// Transform INS position to camera
-//		px = baseLinkToOffset * px;
+//		px = px * baseLinkToOffset;
 
 		stereoGroundTruths.insert(make_pair(ts, px));
 	}
-}
-
-
-TTransform
-TTransform::from_XYZ_RPY (
-	const Eigen::Vector3d &pos,
-	double roll, double pitch, double yaw)
-{
-	Quaterniond q = fromRPY(roll, pitch, yaw);
-	return TTransform::from_Pos_Quat(pos, q);
-}
-
-
-TTransform
-TTransform::from_Pos_Quat(const Vector3d &pos, const Quaterniond &orient)
-{
-	Affine3d t;
-	t = Eigen::Translation3d(pos) * orient;
-	return t;
 }
 
 
@@ -236,16 +216,21 @@ void OxfordDataset::dumpGroundTruth(const string &fp)
 		fd = &fdr;
 	}
 
+	*fd << fixed;
+	*fd << setprecision(4);
+
 	for (int i=0; i<stereoTimestamps.size(); i++) {
-		auto t = stereoTimestamps[i];
-		auto trans = stereoGroundTruths[t];
-		*fd << trans.position().x()
+		auto t = stereoTimestamps.at(i);
+		float tss = (float)t / 1e6;
+		auto trans = stereoGroundTruths.at(t);
+		Vector3d rpy = quaternionToRPY(trans.orientation());
+		*fd << tss
+			<< dumpSep << trans.position().x()
 			<< dumpSep << trans.position().y()
 			<< dumpSep << trans.position().z()
-			<< dumpSep << trans.orientation().x()
-			<< dumpSep << trans.orientation().y()
-			<< dumpSep << trans.orientation().z()
-			<< dumpSep << trans.orientation().w()
+			<< dumpSep << rpy[0]
+			<< dumpSep << rpy[1]
+			<< dumpSep << rpy[2]
 			<< endl;
 	}
 }
