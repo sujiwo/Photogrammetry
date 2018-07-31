@@ -11,6 +11,7 @@
 
 #include "csv.h"
 #include "OxfordDataset.h"
+#include "utilities.h"
 
 
 using namespace std;
@@ -108,31 +109,31 @@ void OxfordDataset::loadTimestamps()
 }
 
 
-TTransform fromIns(const InsPose &ps)
+TTransform fromINS(const InsPose &ps)
 {
 	TTransform px;
 	px.position = Vector3d(ps.easting, ps.northing, ps.altitude);
 	px.position.x() += OriginCorrectionEasting;
 	px.position.y() += OriginCorrectionNorthing;
-
-	// XXX: Orientation ?
-
+	px.orientation = fromRPY(ps.roll, ps.pitch, ps.yaw);
 	return px;
 }
 
 
-TTransform interpolateFromIns (
+TTransform interpolateFromINS (
 	uint64_t timestamp,
 	const InsPose &ps1,
 	const InsPose &ps2)
 {
-	assert(timestamp >= ps1.timestamp and timestamp<=ps1.timestamp);
+	assert(timestamp >= ps1.timestamp and timestamp<=ps2.timestamp);
 	TTransform px;
 
-	TTransform px1 = fromIns(ps1),
-		px2 = fromIns(ps2);
+	TTransform px1 = fromINS(ps1),
+		px2 = fromINS(ps2);
 
-	// XXX: Unfinished
+	double ratio = double(timestamp - ps1.timestamp) / double(ps2.timestamp - ps1.timestamp);
+	px.position = px1.position + ratio * (px2.position - px1.position);
+	px.orientation = px1.orientation.slerp(ratio, px2.orientation);
 
 	return px;
 }
@@ -160,19 +161,25 @@ OxfordDataset::createStereoGroundTruths()
 
 		// edge case min
 		if (ts < insPoseTable[0].timestamp) {
-			px = fromIns(insPoseTable[0]);
+			px = fromINS(insPoseTable[0]);
 		}
 
 		else if (ts > insPoseTable[insPoseTable.size()-1].timestamp) {
-			px = fromIns(insPoseTable[insPoseTable.size()-1]);
+			px = fromINS(insPoseTable[insPoseTable.size()-1]);
 		}
 
 		else {
-			while(ts < (*Itx).first)
+			decltype(Itx) Itx_prev;
+//			while(ts < (*Itx).first) {
+//				Itx_prev = Itx;
+//				Itx++;
+//			}
+			do {
+				Itx_prev = Itx;
 				Itx++;
-			auto Itx_prev = Itx--;
-			Itx++;
-			px = interpolateFromIns(ts,
+			} while (ts < (*Itx).first);
+
+			px = interpolateFromINS(ts,
 				*((*Itx_prev).second),
 				*((*Itx).second));
 		}

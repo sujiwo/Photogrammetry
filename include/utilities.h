@@ -21,6 +21,8 @@ using std::pair;
 using std::set;
 using std::map;
 using std::vector;
+using Eigen::Quaterniond;
+using Eigen::Vector3d;
 
 
 
@@ -131,6 +133,45 @@ maximumMapElement(const map<k,v> &maptg)
 			{return element1.second < element2.second;}
 	);
 	return *p;
+}
+
+
+/*
+ * All angles are in Radian
+ */
+inline Quaterniond fromRPY (double roll, double pitch, double yaw)
+{
+	int
+		i = 0,
+		j = 1,
+		k = 2;
+
+	roll /= 2.0;
+	pitch /= 2.0;
+	yaw /= 2.0;
+	double
+		ci = cos(roll),
+		si = sin(roll),
+		cj = cos(pitch),
+		sj = sin(pitch),
+		ck = cos(yaw),
+		sk = sin(yaw),
+		cc = ci*ck,
+		cs = ci*sk,
+		sc = si*ck,
+		ss = si*sk;
+	Quaterniond q;
+	q.x() = cj*sc - sj*cs;
+	q.y() = cj*ss + sj*cc;
+	q.z() = cj*cs - sj*sc;
+	q.w() = cj*cc + sj*ss;
+	return q;
+}
+
+
+inline Vector3d quaternionToRPY (const Quaterniond &q)
+{
+
 }
 
 #endif /* UTILITIES_H_ */
