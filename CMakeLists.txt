@@ -108,6 +108,7 @@ target_link_libraries(map_oxford
 	${REQUIRED_LIBS}
 )
 
-#add_executable(table_creator
-#	src/table_creator.cpp
-#)
+add_executable(test_tf
+	src/test_tf.cpp
+	src/utilities.cpp
+)

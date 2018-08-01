@@ -160,8 +160,13 @@ struct TTransform : public Eigen::Affine3d
 	inline const Vector3d position() const
 	{ return this->translation(); }
 
-	const Quaterniond orientation() const
+	inline const Quaterniond orientation() const
 	{ return Eigen::Quaterniond(this->rotation()); }
+
+//	inline void setPosition(const double &x=0, const double &y=0, const double &z=0)
+//	{
+//		translation() = Eigen::Translation3d(x, y, z);
+//	}
 };
 
 

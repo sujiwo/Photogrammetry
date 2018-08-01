@@ -196,7 +196,7 @@ OxfordDataset::createStereoGroundTruths()
 			px = interpolateFromINS(ts, ps1, ps2);
 		}
 
-		// Transform INS position to camera
+		// Transform INS/baselink position to camera
 //		px = px * baseLinkToOffset;
 
 		stereoGroundTruths.insert(make_pair(ts, px));

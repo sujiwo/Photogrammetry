@@ -30,8 +30,8 @@ Quaterniond fromRPY (double roll, double pitch, double yaw)
 		ss = si*sk;
 	Quaterniond q;
 	q.x() = cj*sc - sj*cs;
-	q.z() = cj*ss + sj*cc;
-	q.y() = cj*cs - sj*sc;
+	q.y() = cj*ss + sj*cc;
+	q.z() = cj*cs - sj*sc;
 	q.w() = cj*cc + sj*ss;
 	q.normalize();
 	return q;
