@@ -44,7 +44,7 @@ Vector3d quaternionToRPY (const Quaterniond &q)
 
 	double cy = sqrt(m(0,0)*m(0,0) + m(1,0)*m(1,0));
 	double ax, ay, az;
-	if (cy > std::numeric_limits<double>::epsilon()) {
+	if (cy > std::numeric_limits<double>::epsilon()*4.0) {
 		ax = atan2( m(2, 1),  m(2, 2));
 		ay = atan2(-m(2, 0),  cy);
 		az = atan2( m(1, 0),  m(0,0));
@@ -74,4 +74,21 @@ TTransform::from_Pos_Quat(const Vector3d &pos, const Quaterniond &orient)
 	Affine3d t;
 	t = Eigen::Translation3d(pos) * orient;
 	return t;
+}
+
+
+#include <sstream>
+
+string
+TTransform::str() const
+{
+	stringstream ss;
+	ss << "x=" << position().x()
+		<< " y=" << position().y()
+		<< " z=" << position().z()
+		<< ", qx=" << orientation().x()
+		<< " qy=" << orientation().y()
+		<< " qz=" << orientation().z()
+		<< " qw=" << orientation().w();
+	return ss.str();
 }

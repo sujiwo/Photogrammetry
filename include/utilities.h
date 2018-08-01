@@ -140,6 +140,35 @@ maximumMapElement(const map<k,v> &maptg)
 }
 
 
+/*
+ * All angles are in Radian
+ */
+Quaterniond fromRPY (double roll, double pitch, double yaw);
+
+Vector3d quaternionToRPY (const Quaterniond &q);
+
+
+class TQuaternion : public Eigen::Quaterniond
+{
+public:
+	inline TQuaternion(const double &x, const double &y, const double &z, const double &w):
+		Quaterniond(w, x, y, z)
+	{}
+
+	inline TQuaternion(double roll, double pitch, double yaw)
+	{
+		Quaterniond q = fromRPY(roll, pitch, yaw);
+		coeffs() = q.coeffs();
+	}
+
+	inline TQuaternion& operator=(const Quaterniond &q)
+	{
+		coeffs() = q.coeffs();
+		return *this;
+	}
+};
+
+
 struct TTransform : public Eigen::Affine3d
 {
 	TTransform()
@@ -163,6 +192,9 @@ struct TTransform : public Eigen::Affine3d
 	inline const Quaterniond orientation() const
 	{ return Eigen::Quaterniond(this->rotation()); }
 
+	std::string
+	str () const;
+
 //	inline void setPosition(const double &x=0, const double &y=0, const double &z=0)
 //	{
 //		translation() = Eigen::Translation3d(x, y, z);
@@ -170,13 +202,7 @@ struct TTransform : public Eigen::Affine3d
 };
 
 
-/*
- * All angles are in Radian
- */
-Quaterniond fromRPY (double roll, double pitch, double yaw);
-
-Vector3d quaternionToRPY (const Quaterniond &q);
-
+typedef TTransform Pose;
 
 
 #endif /* UTILITIES_H_ */

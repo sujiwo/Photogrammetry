@@ -11,6 +11,9 @@ find_package (PCL REQUIRED)
 find_package (OpenMP REQUIRED)
 find_package (PythonLibs REQUIRED)
 
+find_package (tf REQUIRED)
+find_package (tf_conversions REQUIRED)
+
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -30,6 +33,8 @@ include_directories (
 	${PCL_INCLUDE_DIRS}
 	${PYTHON_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
+	
+	${tf_INCLUDE_DIRS}
 	
 	g2o
 	DBoW2
@@ -111,4 +116,10 @@ target_link_libraries(map_oxford
 add_executable(test_tf
 	src/test_tf.cpp
 	src/utilities.cpp
+)
+
+target_link_libraries(test_tf
+	${tf_LIBRARIES}
+	${tf_conversions_LIBRARIES}
+	Boost::system
 )

@@ -29,8 +29,7 @@ static const set<int> InsColumns ({0,6,5,4,12,13,14,10,9,11,2,3});
 static const TTransform
 baseLinkToOffset = TTransform::from_Pos_Quat(
 	Vector3d (0.0, 1.720, 1.070),
-	// W, X, Y, Z
-	Quaterniond (0.691, -0.723, 0.007, 0.002));
+	TQuaternion (-0.723, 0.007, 0.002, 0.691));
 
 
 
@@ -91,8 +90,11 @@ OxfordDataset::loadIns()
 			is.latitude = stod(INS_s.get(i, "latitude"));
 			is.longitude = stod(INS_s.get(i, "longitude"));
 			is.roll = stod(INS_s.get(i, "roll"));
-			is.pitch = stod(INS_s.get(i, "pitch"));
-			is.yaw = stod(INS_s.get(i, "yaw"));
+			// Correct pitch & yaw rotations to more sensible ROS convention;
+			// otherwise you will have problems later
+			is.pitch = -stod(INS_s.get(i, "pitch"));
+			is.yaw = -stod(INS_s.get(i, "yaw"));
+
 		insPoseTable[i] = is;
 	}
 }
@@ -122,7 +124,7 @@ void OxfordDataset::loadTimestamps()
 }
 
 
-TTransform fromINS(const InsPose &ps)
+Pose fromINS(const InsPose &ps)
 {
 	return TTransform::from_XYZ_RPY(
 		Vector3d(
@@ -134,14 +136,14 @@ TTransform fromINS(const InsPose &ps)
 }
 
 
-TTransform interpolateFromINS (
+Pose interpolateFromINS (
 	uint64_t timestamp,
 	const InsPose &ps1,
 	const InsPose &ps2)
 {
 	assert(timestamp >= ps1.timestamp and timestamp<=ps2.timestamp);
 
-	TTransform px1 = fromINS(ps1),
+	Pose px1 = fromINS(ps1),
 		px2 = fromINS(ps2);
 
 	double ratio = double(timestamp - ps1.timestamp) / double(ps2.timestamp - ps1.timestamp);
@@ -149,7 +151,7 @@ TTransform interpolateFromINS (
 	Quaterniond px_or = px1.orientation().slerp(ratio, px2.orientation());
 	px_or.normalize();
 
-	return TTransform::from_Pos_Quat(px_pos, px_or);
+	return Pose::from_Pos_Quat(px_pos, px_or);
 }
 
 
@@ -197,7 +199,7 @@ OxfordDataset::createStereoGroundTruths()
 		}
 
 		// Transform INS/baselink position to camera
-//		px = px * baseLinkToOffset;
+		px = px * baseLinkToOffset;
 
 		stereoGroundTruths.insert(make_pair(ts, px));
 	}
