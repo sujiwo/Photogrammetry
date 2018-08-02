@@ -92,3 +92,28 @@ TTransform::str() const
 		<< " qw=" << orientation().w();
 	return ss.str();
 }
+
+
+Vector4d vectorFromQuaternion (const Quaterniond &q)
+{
+	return Vector4d(q.x(), q.y(), q.z(), q.w());
+}
+
+
+void
+TTransform::displacement (
+	const TTransform &other,
+	double &linear, double &angular) const
+{
+	linear = (this->position()-other.position()).norm();
+
+	Vector4d q1 = vectorFromQuaternion(this->orientation().normalized()),
+		q2 = vectorFromQuaternion(other.orientation().normalized());
+	angular = acos(
+		q1.head(3).dot(q2.head(3)) /
+		(q1.head(3).norm() * q2.head(3).norm())
+	);
+}
+
+
+

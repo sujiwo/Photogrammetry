@@ -10,6 +10,7 @@ find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
 find_package (OpenMP REQUIRED)
 find_package (PythonLibs REQUIRED)
+find_package (yaml-cpp REQUIRED)
 
 find_package (tf REQUIRED)
 find_package (tf_conversions REQUIRED)
@@ -46,6 +47,7 @@ include_directories (
 set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
+	${YAML_CPP_LIBRARIES}
 	Boost::serialization
 	g2o
 	DBoW2

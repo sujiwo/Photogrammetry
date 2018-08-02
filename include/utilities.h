@@ -195,6 +195,9 @@ struct TTransform : public Eigen::Affine3d
 	std::string
 	str () const;
 
+	void
+	displacement (const TTransform &other, double &linear, double &angular) const;
+
 //	inline void setPosition(const double &x=0, const double &y=0, const double &z=0)
 //	{
 //		translation() = Eigen::Translation3d(x, y, z);

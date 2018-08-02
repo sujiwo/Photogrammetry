@@ -6,8 +6,11 @@
  */
 
 
+#include <fstream>
 #include <cstdio>
 #include <Eigen/Eigen>
+#include <opencv2/highgui.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include "csv.h"
 #include "OxfordDataset.h"
@@ -33,12 +36,23 @@ baseLinkToOffset = TTransform::from_Pos_Quat(
 
 
 
-OxfordDataset::OxfordDataset(const std::string &dirpath, GroundTruthSrc gts) :
+OxfordDataset::OxfordDataset(
+
+	const std::string &dirpath,
+	const std::string &modelDir,
+	GroundTruthSrc gts) :
+
 	oxPath (dirpath)
 {
+	oxfCamera.fx = -1;
 	loadTimestamps();
 	loadGps();
 	loadIns();
+
+	loadModel(modelDir);
+	double
+		x=distortionLUT_centerx.at<double>(0,0),
+		y=distortionLUT_centerx.at<double>(1,0);
 
 	createStereoGroundTruths();
 	return;
@@ -70,6 +84,30 @@ OxfordDataset::loadGps()
 		gpsPoseTable[i] = ps;
 	}
 }
+
+
+//CameraPinholeParams
+//OxfordDataset::getCameraParameter(const std::string &yamlFileCameraParams)
+//{
+//	if (yamlFileCameraParams.size()==0) {
+//		if (oxfCamera.fx<0)
+//			throw runtime_error("Camera parameter has not been loaded");
+//		else
+//			return oxfCamera;
+//	}
+//
+//	YAML::Node camCfg = YAML::LoadFile(yamlFileCameraParams);
+//	oxfCamera.width = camCfg["image_width"].as<int>();
+//	oxfCamera.height = camCfg["image_height"].as<int>();
+//	// TODO: Read fx/cx/fy/cy
+//	vector<double> intrinsics = camCfg["camera_matrix"]["data"].as<vector<double>>();
+//	oxfCamera.fx = intrinsics[0];
+//	oxfCamera.cx = intrinsics[2];
+//	oxfCamera.fy = intrinsics[4];
+//	oxfCamera.cy = intrinsics[5];
+//
+//	return oxfCamera;
+//}
 
 
 void
@@ -173,7 +211,7 @@ OxfordDataset::createStereoGroundTruths()
 	for (uint32_t i=0; i<stereoTimestamps.size(); i++) {
 
 		uint64_t ts = stereoTimestamps[i];
-		TTransform px;
+		Pose px;
 
 		if (ts < insPoseTable[0].timestamp) {
 			px = fromINS(insPoseTable[0]);
@@ -215,6 +253,8 @@ void OxfordDataset::dumpGroundTruth(const string &fp)
 		fd = &cout;
 	else {
 		fdr.open(fp);
+		if (fdr.good())
+			throw runtime_error("Unable to open file");
 		fd = &fdr;
 	}
 
@@ -235,4 +275,72 @@ void OxfordDataset::dumpGroundTruth(const string &fp)
 			<< dumpSep << rpy[2]
 			<< endl;
 	}
+}
+
+
+OxfordDataItem
+OxfordDataset::at(const int i)
+{
+	OxfordDataItem di;
+	di.parent = this;
+	di.timestamp = stereoTimestamps[i];
+	di.paths = stereoImagePaths[i];
+	di.groundTruth = stereoGroundTruths.at(di.timestamp);
+	return di;
+}
+
+
+cv::Mat
+OxfordDataItem::getImage(int which)
+{
+	const string &path = this->paths[which];
+	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
+
+	// XXX: need better demosaicing algorithms
+	cv::cvtColor(img, img, CV_BayerGB2RGB);
+
+	return img;
+}
+
+
+void
+OxfordDataset::loadModel(const string &modelDir)
+{
+	string
+		centerLut = modelDir + "/stereo_narrow_left_distortion_lut.bin",
+		centerIntrinsic = modelDir + "/stereo_narrow_left.txt";
+
+	// LUT distortion correction table
+	std::ifstream lutfd (centerLut, ifstream::ate|ifstream::binary);
+	size_t lutfdsize = lutfd.tellg();
+	if (lutfdsize%sizeof(double) != 0)
+		throw runtime_error("File size is not correct");
+
+	lutfd.seekg(ifstream::beg);
+//	distortionLUT_center = Matrix<double,2,Dynamic,Eigen::RowMajor>();
+//	distortionLUT_center.resize(2, lutfdsize / (sizeof(double)*2));
+//	lutfd.read((char*)&distortionLUT_center(0,0), lutfdsize/2);
+//	lutfd.read((char*)&distortionLUT_center(1,0), lutfdsize/2);
+//	distortionLUT_center.transposeInPlace();
+
+	distortionLUT_centerx = cv::Mat(2, lutfdsize/(sizeof(double)*2), CV_64F);
+	lutfd.read((char*)distortionLUT_centerx.ptr(0), lutfdsize/2);
+	lutfd.read((char*)distortionLUT_centerx.ptr(1), lutfdsize/2);
+//	distortionLUT_centerx = distortionLUT_centerx.t();
+
+	// Camera intrinsic parameters
+	StringTable intr = create_table(centerIntrinsic);
+	oxfCamera.fx = stod(intr.get(0,0));
+	oxfCamera.fy = stod(intr.get(0,1));
+	oxfCamera.cx = stod(intr.get(0,2));
+	oxfCamera.cy = stod(intr.get(0,3));
+	oxfCamera.width = oxfCamera.height = -1;
+	// XXX: image width & height have not been loaded
+}
+
+
+cv::Mat
+OxfordDataset::undistort (cv::Mat &src, const Eigen::MatrixXd &distortionLUT)
+{
+	// Hint: use cv::remap
 }
