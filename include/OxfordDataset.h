@@ -107,7 +107,7 @@ public:
 	OxfordDataItem at(const int i);
 
 	friend struct OxfordDataItem;
-	static cv::Mat undistort (cv::Mat &src, const Eigen::MatrixXd &distortionLUT);
+	cv::Mat undistort (cv::Mat &src);
 
 
 protected:
@@ -127,8 +127,7 @@ protected:
 	std::vector<InsPose> insPoseTable;
 //	std::vector<uint64_t> insTimestamps;
 
-	Eigen::MatrixXd distortionLUT_center;
-	cv::Mat distortionLUT_centerx;
+	cv::Mat distortionLUT_center_x, distortionLUT_center_y;
 
 private:
 	void loadIns ();

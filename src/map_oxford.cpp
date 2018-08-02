@@ -21,7 +21,7 @@ int main (int argc, char *argv[])
 	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
 	OxfordDataItem di = oxf.at(1000);
 	cv::Mat img = di.getImage();
-	cv::imwrite("/tmp/1.png", img);
+	cv::imwrite("/tmp/3.png", img);
 //	oxf.getCameraParameter("/home/")
 	return 0;
 }

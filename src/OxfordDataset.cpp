@@ -50,9 +50,6 @@ OxfordDataset::OxfordDataset(
 	loadIns();
 
 	loadModel(modelDir);
-	double
-		x=distortionLUT_centerx.at<double>(0,0),
-		y=distortionLUT_centerx.at<double>(1,0);
 
 	createStereoGroundTruths();
 	return;
@@ -298,6 +295,7 @@ OxfordDataItem::getImage(int which)
 
 	// XXX: need better demosaicing algorithms
 	cv::cvtColor(img, img, CV_BayerGB2RGB);
+	img = parent->undistort(img);
 
 	return img;
 }
@@ -312,21 +310,16 @@ OxfordDataset::loadModel(const string &modelDir)
 
 	// LUT distortion correction table
 	std::ifstream lutfd (centerLut, ifstream::ate|ifstream::binary);
-	size_t lutfdsize = lutfd.tellg();
+	const size_t lutfdsize = lutfd.tellg();
 	if (lutfdsize%sizeof(double) != 0)
 		throw runtime_error("File size is not correct");
-
 	lutfd.seekg(ifstream::beg);
-//	distortionLUT_center = Matrix<double,2,Dynamic,Eigen::RowMajor>();
-//	distortionLUT_center.resize(2, lutfdsize / (sizeof(double)*2));
-//	lutfd.read((char*)&distortionLUT_center(0,0), lutfdsize/2);
-//	lutfd.read((char*)&distortionLUT_center(1,0), lutfdsize/2);
-//	distortionLUT_center.transposeInPlace();
 
-	distortionLUT_centerx = cv::Mat(2, lutfdsize/(sizeof(double)*2), CV_64F);
-	lutfd.read((char*)distortionLUT_centerx.ptr(0), lutfdsize/2);
-	lutfd.read((char*)distortionLUT_centerx.ptr(1), lutfdsize/2);
-//	distortionLUT_centerx = distortionLUT_centerx.t();
+	cv::Mat distortionLUT_center (2, lutfdsize/(sizeof(double)*2), CV_64F);
+	lutfd.read((char*)distortionLUT_center.ptr(0), lutfdsize/2);
+	lutfd.read((char*)distortionLUT_center.ptr(1), lutfdsize/2);
+	distortionLUT_center.row(0).convertTo(distortionLUT_center_x, CV_32F);
+	distortionLUT_center.row(1).convertTo(distortionLUT_center_y, CV_32F);
 
 	// Camera intrinsic parameters
 	StringTable intr = create_table(centerIntrinsic);
@@ -340,7 +333,20 @@ OxfordDataset::loadModel(const string &modelDir)
 
 
 cv::Mat
-OxfordDataset::undistort (cv::Mat &src, const Eigen::MatrixXd &distortionLUT)
+OxfordDataset::undistort (cv::Mat &src)
 {
 	// Hint: use cv::remap
+	if (oxfCamera.width==-1) {
+		oxfCamera.width=src.cols;
+		oxfCamera.height=src.rows;
+
+		if (oxfCamera.width * oxfCamera.height != distortionLUT_center_x.cols)
+			throw runtime_error("Mismatched image size and model size");
+		distortionLUT_center_x = distortionLUT_center_x.reshape(0, oxfCamera.height);
+		distortionLUT_center_y = distortionLUT_center_y.reshape(0, oxfCamera.height);
+	}
+
+	cv::Mat target;
+	cv::remap(src, target, distortionLUT_center_x, distortionLUT_center_y, cv::INTER_LINEAR);
+	return target;
 }
