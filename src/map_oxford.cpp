@@ -9,19 +9,53 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
-#include "OxfordDataset.h"
 
+#include "OxfordDataset.h"
+#include "MapBuilder2.h"
 
 using namespace std;
 using namespace Eigen;
 
 
+MapBuilder2 *builder;
+const double
+	translationThrs = 1.0,	// meter
+	rotationThrs = 0.04;	// == 2.5 degrees
+
+
+InputFrame createInputFrame(OxfordDataItem &d)
+{
+	cv::Mat i=d.getImage(StereoImagePath::CENTER);
+	return InputFrame(i, d.groundTruth.position(), d.groundTruth.orientation());
+}
+
+
+void buildMap (OxfordDataset &dataset)
+{
+	builder = new MapBuilder2;
+
+	// Find two initializer frame
+	OxfordDataItem d0 = dataset.at(0);
+	OxfordDataItem d1;
+	int i=1;
+	while (true) {
+		d1 = dataset.at(1);
+		double runTrans, runRot;
+		d1.groundTruth.displacement(d0.groundTruth, runTrans, runRot);
+		if (runTrans>=translationThrs or runRot>=rotationThrs)
+			break;
+	}
+
+	InputFrame frame0 = createInputFrame(d0);
+	InputFrame frame1 = createInputFrame(d1);
+	builder->initialize(frame0, frame1);
+
+	delete builder;
+}
+
+
 int main (int argc, char *argv[])
 {
 	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
-	OxfordDataItem di = oxf.at(1000);
-	cv::Mat img = di.getImage();
-	cv::imwrite("/tmp/3.png", img);
-//	oxf.getCameraParameter("/home/")
 	return 0;
 }

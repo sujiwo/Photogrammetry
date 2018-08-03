@@ -101,6 +101,7 @@ add_library(photogrampy SHARED
 set_target_properties(photogrampy PROPERTIES PREFIX "")
 target_link_libraries(photogrampy
 	photogrammetry
+	Boost::python
 	${REQUIRED_LIBS}
 )
 

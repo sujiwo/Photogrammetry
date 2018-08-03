@@ -34,6 +34,15 @@ struct DataItem {
 };
 
 
+class DataItemx
+{
+public:
+	std::string getImagePath() const;
+	Eigen::Vector3d getPosition() const;
+	Eigen::Quaterniond getOrientation() const;
+};
+
+
 typedef Eigen::Affine3d Transform3d;
 
 

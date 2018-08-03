@@ -83,30 +83,6 @@ OxfordDataset::loadGps()
 }
 
 
-//CameraPinholeParams
-//OxfordDataset::getCameraParameter(const std::string &yamlFileCameraParams)
-//{
-//	if (yamlFileCameraParams.size()==0) {
-//		if (oxfCamera.fx<0)
-//			throw runtime_error("Camera parameter has not been loaded");
-//		else
-//			return oxfCamera;
-//	}
-//
-//	YAML::Node camCfg = YAML::LoadFile(yamlFileCameraParams);
-//	oxfCamera.width = camCfg["image_width"].as<int>();
-//	oxfCamera.height = camCfg["image_height"].as<int>();
-//	// TODO: Read fx/cx/fy/cy
-//	vector<double> intrinsics = camCfg["camera_matrix"]["data"].as<vector<double>>();
-//	oxfCamera.fx = intrinsics[0];
-//	oxfCamera.cx = intrinsics[2];
-//	oxfCamera.fy = intrinsics[4];
-//	oxfCamera.cy = intrinsics[5];
-//
-//	return oxfCamera;
-//}
-
-
 void
 OxfordDataset::loadIns()
 {

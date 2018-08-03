@@ -14,11 +14,12 @@
 #include <tuple>
 #include <array>
 #include <set>
-
+#include <opencv2/opencv.hpp>
 
 #include "VMap.h"
 #include "utilities.h"
-#include <opencv2/opencv.hpp>
+#include "GenericDataset.h"
+
 
 
 /*
@@ -81,7 +82,7 @@ struct InsPose : public GpsPose
 
 
 class OxfordDataset;
-struct OxfordDataItem
+struct OxfordDataItem : public GenericDataItem
 {
 	uint64_t timestamp;
 	StereoImagePath paths;
@@ -89,6 +90,10 @@ struct OxfordDataItem
 	OxfordDataset *parent;
 
 	cv::Mat getImage (int which=StereoImagePath::CENTER);
+	cv::Mat getImage () const;
+	Eigen::Vector3d getPosition() const;
+	Eigen::Quaterniond getOrientation() const;
+
 };
 
 

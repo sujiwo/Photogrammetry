@@ -10,15 +10,19 @@
 #include "MapBuilder2.h"
 #include "optimizer.h"
 #include "ImageDatabase.h"
+#include "Viewer.h"
+
 
 
 using namespace std;
 using namespace Eigen;
 
 
-MapBuilder2::MapBuilder2()
+MapBuilder2::MapBuilder2() :
+	currentAnchor(0)
 {
 	cMap = new VMap();
+//	imageView = new Viewer;
 }
 
 

@@ -16,6 +16,9 @@
 #include "VMap.h"
 
 
+class Viewer;
+
+
 class InputFrame {
 public:
 	cv::Mat image;
@@ -66,6 +69,8 @@ protected:
 	kfid currentAnchor;
 
 	bool initialized = false;
+
+	Viewer *imageView;
 };
 
 #endif /* MAPBUILDER2_H_ */
