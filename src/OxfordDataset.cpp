@@ -7,6 +7,7 @@
 
 
 #include <fstream>
+#include <exception>
 #include <cstdio>
 #include <Eigen/Eigen>
 #include <opencv2/highgui.hpp>
@@ -46,10 +47,11 @@ OxfordDataset::OxfordDataset(
 {
 	oxfCamera.fx = -1;
 	loadTimestamps();
-	loadGps();
-	loadIns();
 
 	loadModel(modelDir);
+
+	loadGps();
+	loadIns();
 
 	createStereoGroundTruths();
 	return;
@@ -117,21 +119,47 @@ void OxfordDataset::loadTimestamps()
 	StringTable TS = create_table(timestampsPath);
 	const size_t ss = TS.size();
 	stereoTimestamps.resize(ss);
-	stereoImagePaths.resize(ss);
+//	stereoImagePaths.resize(ss);
 
 	for (uint32_t i=0; i<ss; i++) {
 		const string &tsstr = TS.get(i,0);
-		stereoTimestamps[i] = stoul(tsstr);
+		const timestamp_t ts = stoul(tsstr);
+		stereoTimestamps[i] = ts;
 
-		const string
-			ctrname = oxPath + "/stereo/centre",
-        	lftname = oxPath + "/stereo/left",
-			rhtname = oxPath + "/stereo/right";
-
-		stereoImagePaths[i][StereoImagePath::LEFT] = lftname + '/' + tsstr + ".png";
-		stereoImagePaths[i][StereoImagePath::CENTER] = ctrname + '/' + tsstr + ".png";
-		stereoImagePaths[i][StereoImagePath::RIGHT] = rhtname + '/' + tsstr + ".png";
+		OxfordDataItem d(this);
+		d.timestamp = ts;
+		stereoRecords.insert(make_pair(ts, d));
 	}
+}
+
+
+string
+OxfordDataItem::getPath(OxfordDataItem::StereoImageT t) const
+{
+	const string ss = to_string(timestamp);
+
+	switch (t) {
+	case StereoLeft:
+		return parent->oxPath + "/stereo/left/" + ss + ".png"; break;
+	case StereoCenter:
+		return parent->oxPath + "/stereo/centre/" + ss + ".png"; break;
+	case StereoRight:
+		return parent->oxPath + "/stereo/right/" + ss + ".png"; break;
+	}
+}
+
+
+cv::Mat
+OxfordDataItem::getImage(StereoImageT t) const
+{
+	const string path = getPath(t);
+	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
+
+	// XXX: need better demosaicing algorithms
+	cv::cvtColor(img, img, CV_BayerGB2RGB);
+	img = parent->undistort(img);
+
+	return img;
 }
 
 
@@ -212,68 +240,16 @@ OxfordDataset::createStereoGroundTruths()
 		// Transform INS/baselink position to camera
 		px = px * baseLinkToOffset;
 
-		stereoGroundTruths.insert(make_pair(ts, px));
+		stereoRecords.at(ts).groundTruth = px;
 	}
 }
 
 
-void OxfordDataset::dumpGroundTruth(const string &fp)
-{
-	const char dumpSep = ',';
-	ostream *fd;
-	ofstream fdr;
-	if (fp.size()==0)
-		fd = &cout;
-	else {
-		fdr.open(fp);
-		if (fdr.good())
-			throw runtime_error("Unable to open file");
-		fd = &fdr;
-	}
-
-	*fd << fixed;
-	*fd << setprecision(4);
-
-	for (int i=0; i<stereoTimestamps.size(); i++) {
-		auto t = stereoTimestamps.at(i);
-		float tss = (float)t / 1e6;
-		auto trans = stereoGroundTruths.at(t);
-		Vector3d rpy = quaternionToRPY(trans.orientation());
-		*fd << tss
-			<< dumpSep << trans.position().x()
-			<< dumpSep << trans.position().y()
-			<< dumpSep << trans.position().z()
-			<< dumpSep << rpy[0]
-			<< dumpSep << rpy[1]
-			<< dumpSep << rpy[2]
-			<< endl;
-	}
-}
-
-
-OxfordDataItem
+const OxfordDataItem&
 OxfordDataset::at(const int i)
 {
-	OxfordDataItem di;
-	di.parent = this;
-	di.timestamp = stereoTimestamps[i];
-	di.paths = stereoImagePaths[i];
-	di.groundTruth = stereoGroundTruths.at(di.timestamp);
-	return di;
-}
-
-
-cv::Mat
-OxfordDataItem::getImage(int which)
-{
-	const string &path = this->paths[which];
-	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
-
-	// XXX: need better demosaicing algorithms
-	cv::cvtColor(img, img, CV_BayerGB2RGB);
-	img = parent->undistort(img);
-
-	return img;
+	timestamp_t ts = stereoTimestamps.at(i);
+	return stereoRecords.at(ts);
 }
 
 
@@ -303,8 +279,11 @@ OxfordDataset::loadModel(const string &modelDir)
 	oxfCamera.fy = stod(intr.get(0,1));
 	oxfCamera.cx = stod(intr.get(0,2));
 	oxfCamera.cy = stod(intr.get(0,3));
-	oxfCamera.width = oxfCamera.height = -1;
-	// XXX: image width & height have not been loaded
+
+	const OxfordDataItem &d0 = this->at(0);
+	cv::Mat img0 = cv::imread(d0.getPath());
+	oxfCamera.width = img0.cols;
+	oxfCamera.height = img0.rows;
 }
 
 
@@ -322,7 +301,17 @@ OxfordDataset::undistort (cv::Mat &src)
 		distortionLUT_center_y = distortionLUT_center_y.reshape(0, oxfCamera.height);
 	}
 
+	assert(distortionLUT_center_x.cols == oxfCamera.width);
+
 	cv::Mat target;
 	cv::remap(src, target, distortionLUT_center_x, distortionLUT_center_y, cv::INTER_LINEAR);
 	return target;
 }
+
+
+cv::Mat
+OxfordDataset::getMask()
+{
+	throw exception();
+}
+

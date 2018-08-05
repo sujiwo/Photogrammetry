@@ -18,9 +18,9 @@ static string wndName ("Viewer");
 static cv::Vec3b kpColor(255,0,0);
 
 
-Viewer::Viewer (VMap *m, const std::vector<DataItem> *ds) :
-	dataset(ds),
-	cMap(m)
+Viewer::Viewer (const GenericDataset &genset) :
+	dataset(genset),
+	cMap(NULL)
 {
 	cv::namedWindow(wndName);
 }
@@ -30,6 +30,11 @@ Viewer::~Viewer()
 {
 	cv::destroyWindow(wndName);
 }
+
+
+void
+Viewer::setMap (VMap *m)
+{ cMap = m; }
 
 
 vector<cv::KeyPoint>
@@ -46,6 +51,8 @@ collectAllKeypoints (const KeyFrame *kf, const vector<kpid> &allKpIds)
 void
 Viewer::update(const kfid &frame)
 {
+	assert (cMap != NULL);
+
 	KeyFrame *kf = cMap->keyframe(frame);
 	cv::Mat imagebuf = cv::imread(dataset->at(frame).imagePath);
 

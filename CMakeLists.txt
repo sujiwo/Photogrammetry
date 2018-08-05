@@ -68,6 +68,7 @@ add_library(
 		src/optimizer.cpp
 		src/OxfordDataset.cpp
 		src/utilities.cpp	
+		src/GenericDataset.cpp
 )
 
 add_executable (map_test

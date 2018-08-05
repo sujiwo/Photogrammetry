@@ -40,16 +40,6 @@ const double
 	OriginCorrectionEasting = -620248.53,
 	OriginCorrectionNorthing = -5734882.47;
 
-struct StereoImagePath: public std::array <std::string,3>
-{
-public:
-	enum {
-		LEFT=0,
-		CENTER=1,
-		RIGHT=2
-	};
-};
-
 
 struct GpsPose
 {
@@ -72,65 +62,80 @@ struct InsPose : public GpsPose
 };
 
 
-//struct TTransform
-//{
-//	Eigen::Vector3d position;
-//	Eigen::Quaterniond orientation;
-//
-//	Transform3d toEig();
-//};
-
-
 class OxfordDataset;
 struct OxfordDataItem : public GenericDataItem
 {
+	friend class OxfordDataset;
 	uint64_t timestamp;
-	StereoImagePath paths;
+//	StereoImagePath paths;
 	Pose groundTruth;
 	OxfordDataset *parent;
 
-	cv::Mat getImage (int which=StereoImagePath::CENTER);
-	cv::Mat getImage () const;
-	Eigen::Vector3d getPosition() const;
-	Eigen::Quaterniond getOrientation() const;
+	OxfordDataItem():
+		parent(NULL)
+	{}
 
+	OxfordDataItem(OxfordDataset *p):
+		parent(p)
+	{}
+
+	enum StereoImageT {
+		StereoLeft,
+		StereoCenter,
+		StereoRight
+	};
+	cv::Mat getImage (StereoImageT which) const;
+	cv::Mat getImage () const
+	{ return getImage(StereoImageT::StereoCenter); }
+
+	inline Eigen::Vector3d getPosition() const
+	{ return groundTruth.position(); }
+
+	Eigen::Quaterniond getOrientation() const
+	{ return groundTruth.orientation(); }
+
+	uint64_t getId() const
+	{ return timestamp; }
+
+private:
+	std::string getPath(StereoImageT t=StereoCenter) const;
 };
 
 
-class OxfordDataset
+class OxfordDataset: public GenericDataset
 {
 public:
 	OxfordDataset (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
 	virtual ~OxfordDataset();
 
-	uint size() const;
+	inline size_t size() const
+	{ return stereoTimestamps.size(); }
 
-//	CameraPinholeParams getCameraParameter(const std::string &yamlFileCameraParams=std::string());
+	CameraPinholeParams getCameraParameter()
+	{ return oxfCamera; }
 
 	void dumpGroundTruth(const std::string &fp=std::string());
 
-	OxfordDataItem at(const int i);
+	const OxfordDataItem &at(const int i);
 
 	friend struct OxfordDataItem;
 	cv::Mat undistort (cv::Mat &src);
 
+	cv::Mat getMask();
+
 
 protected:
-	std::vector<DataItem> records;
-	std::vector<unsigned long int> timestamps;
 	CameraPinholeParams oxfCamera;
 
 	std::string oxPath;
 
 	std::vector<uint64_t> stereoTimestamps;
-	std::vector<StereoImagePath> stereoImagePaths;
-	std::map<uint64_t,Pose> stereoGroundTruths;
+
+	std::map<timestamp_t,OxfordDataItem> stereoRecords;
 
 	std::vector<GpsPose> gpsPoseTable;
-//	std::vector<uint64_t> gpsTimestamps;
 
 	std::vector<InsPose> insPoseTable;
-//	std::vector<uint64_t> insTimestamps;
 
 	cv::Mat distortionLUT_center_x, distortionLUT_center_y;
 

@@ -9,7 +9,7 @@
 #define _GENERICDATASET_H_
 
 
-#include <sys/types.h>
+#include <cstdint>
 #include <string>
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
@@ -17,6 +17,7 @@
 
 
 typedef uint64_t dataItemId;
+typedef uint64_t timestamp_t;
 
 
 class GenericDataset;
@@ -25,10 +26,14 @@ class GenericDataset;
 class GenericDataItem
 {
 public:
-	virtual ~GenericDataItem();
+	virtual ~GenericDataItem()
+	{}
+
 	virtual cv::Mat getImage() const = 0;
 	virtual Eigen::Vector3d getPosition() const = 0;
 	virtual Eigen::Quaterniond getOrientation() const = 0;
+
+	virtual uint64_t getId() const = 0;
 };
 
 
@@ -36,15 +41,18 @@ class GenericDataset
 {
 public:
 
-	virtual ~GenericDataset();
+	virtual ~GenericDataset()
+	{}
 
-	virtual uint size() const = 0;
+	virtual size_t size() const = 0;
 
 	virtual CameraPinholeParams getCameraParameter() = 0;
 
 	virtual cv::Mat getMask() = 0;
 
-	const GenericDataItem& at(const int i);
+	virtual const GenericDataItem& at(const int i) = 0;
+
+	void dump(const std::string &filename="");
 };
 
 

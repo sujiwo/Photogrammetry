@@ -25,7 +25,7 @@ const double
 
 InputFrame createInputFrame(OxfordDataItem &d)
 {
-	cv::Mat i=d.getImage(StereoImagePath::CENTER);
+	cv::Mat i=d.getImage();
 	return InputFrame(i, d.groundTruth.position(), d.groundTruth.orientation());
 }
 
@@ -57,5 +57,6 @@ void buildMap (OxfordDataset &dataset)
 int main (int argc, char *argv[])
 {
 	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
+	oxf.dump();
 	return 0;
 }

@@ -13,18 +13,23 @@
 #include <vector>
 #include <thread>
 #include "VMap.h"
-#include "MapBuilder.h"
+#include "GenericDataset.h"
+
 
 
 class Viewer {
 public:
-	Viewer (VMap *srMap, const std::vector<DataItem> *ds=NULL);
+
+	Viewer (const GenericDataset &genset);
 	~Viewer ();
-	void update (const kfid &curFrm);
+
+	void update (const uint64_t &dataItemId);
+
+	void setMap (VMap *m);
 
 private:
+	const GenericDataset &dataset;
 	VMap *cMap;
-	const std::vector<DataItem> *dataset;
 };
 
 #endif /* VIEWER_H_ */
