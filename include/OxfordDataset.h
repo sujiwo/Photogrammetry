@@ -67,7 +67,6 @@ struct OxfordDataItem : public GenericDataItem
 {
 	friend class OxfordDataset;
 	uint64_t timestamp;
-//	StereoImagePath paths;
 	Pose groundTruth;
 	OxfordDataset *parent;
 
@@ -84,8 +83,8 @@ struct OxfordDataItem : public GenericDataItem
 		StereoCenter,
 		StereoRight
 	};
-	cv::Mat getImage (StereoImageT which) const;
-	cv::Mat getImage () const
+	cv::Mat getImage (StereoImageT which) ;
+	cv::Mat getImage ()
 	{ return getImage(StereoImageT::StereoCenter); }
 
 	inline Eigen::Vector3d getPosition() const
@@ -116,7 +115,7 @@ public:
 
 	void dumpGroundTruth(const std::string &fp=std::string());
 
-	const OxfordDataItem &at(const int i);
+	OxfordDataItem &at(const int i) const;
 
 	friend struct OxfordDataItem;
 	cv::Mat undistort (cv::Mat &src);

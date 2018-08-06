@@ -14,6 +14,13 @@ using namespace std;
 using namespace Eigen;
 
 
+cv::Mat
+CustomDataItem::getImage()
+{
+	return cv::imread(this->imagePath, cv::IMREAD_GRAYSCALE);
+}
+
+
 CustomDataset::CustomDataset(const std::string &dataDirPath) :
 	rootPath(dataDirPath)
 {
@@ -71,8 +78,8 @@ CustomDataset::getCameraParameter()
 }
 
 
-const GenericDataItem&
-CustomDataset::at(const int i)
+CustomDataItem&
+CustomDataset::at(const int i) const
 {
-//	return records
+	return const_cast<CustomDataItem&>(records.at(i));
 }

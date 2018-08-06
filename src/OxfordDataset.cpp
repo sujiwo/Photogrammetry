@@ -150,7 +150,7 @@ OxfordDataItem::getPath(OxfordDataItem::StereoImageT t) const
 
 
 cv::Mat
-OxfordDataItem::getImage(StereoImageT t) const
+OxfordDataItem::getImage(StereoImageT t)
 {
 	const string path = getPath(t);
 	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
@@ -245,11 +245,11 @@ OxfordDataset::createStereoGroundTruths()
 }
 
 
-const OxfordDataItem&
-OxfordDataset::at(const int i)
+OxfordDataItem&
+OxfordDataset::at(const int i) const
 {
 	timestamp_t ts = stereoTimestamps.at(i);
-	return stereoRecords.at(ts);
+	return const_cast<OxfordDataItem&>(stereoRecords.at(ts));
 }
 
 

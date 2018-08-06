@@ -27,20 +27,20 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 
 
-struct DataItem {
-	std::string imagePath;
-	Eigen::Vector3d position;
-	Eigen::Quaterniond orientation;
-};
-
-
-class DataItemx
-{
-public:
-	std::string getImagePath() const;
-	Eigen::Vector3d getPosition() const;
-	Eigen::Quaterniond getOrientation() const;
-};
+//struct DataItem {
+//	std::string imagePath;
+//	Eigen::Vector3d position;
+//	Eigen::Quaterniond orientation;
+//};
+//
+//
+//class DataItemx
+//{
+//public:
+//	std::string getImagePath() const;
+//	Eigen::Vector3d getPosition() const;
+//	Eigen::Quaterniond getOrientation() const;
+//};
 
 
 typedef Eigen::Affine3d Transform3d;

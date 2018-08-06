@@ -21,6 +21,7 @@
 #include "KeyFrame.h"
 #include "MapPoint.h"
 #include "VMap.h"
+#include "CustomDataset.h"
 #include "utilities.h"
 
 
@@ -49,7 +50,7 @@ public:
 	bool runBADB = true;
 
 private:
-	std::vector<DataItem> dataset;
+	CustomDataset dataset;
 	CameraPinholeParams cparams;
 
 	VMap *cMap;
@@ -63,7 +64,7 @@ private:
 	cv::Mat vocabulary;
 	void trainVocabulary ();
 
-	KeyFrame* createKeyFrame (const DataItem &di,
+	KeyFrame* createKeyFrame (CustomDataItem &di,
 		kfid setKfId=std::numeric_limits<kfid>::max());
 };
 

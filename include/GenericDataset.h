@@ -26,14 +26,17 @@ class GenericDataset;
 class GenericDataItem
 {
 public:
-	virtual ~GenericDataItem()
-	{}
 
-	virtual cv::Mat getImage() const = 0;
+	virtual ~GenericDataItem();
+
+	virtual cv::Mat getImage() = 0;
+
 	virtual Eigen::Vector3d getPosition() const = 0;
+
 	virtual Eigen::Quaterniond getOrientation() const = 0;
 
 	virtual uint64_t getId() const = 0;
+
 };
 
 
@@ -50,7 +53,7 @@ public:
 
 	virtual cv::Mat getMask() = 0;
 
-	virtual const GenericDataItem& at(const int i) = 0;
+	virtual GenericDataItem& at(const int i) const = 0;
 
 	void dump(const std::string &filename="");
 };

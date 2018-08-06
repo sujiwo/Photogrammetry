@@ -35,48 +35,14 @@ static int onlyCamera;
 
 
 MapBuilder::MapBuilder(const string &datasetDir) :
-	cMap(NULL)
+	cMap(NULL),
+	dataset (datasetDir)
 
 {
-	string groundTruthList = datasetDir + "/pose.txt";
-	ifstream inputfd (groundTruthList.c_str());
-	if (!inputfd.is_open())
-		throw std::runtime_error("Unable to open pose ground truth");
-
-	string cameraParamsFile = datasetDir + "/camera.txt";
-	cparams = CameraPinholeParams::loadCameraParamsFromFile(cameraParamsFile);
-
-	string line;
-	while (true) {
-		if (!getline(inputfd, line))
-			break;
-
-		DataItem cItem;
-		int iid;
-		float timestamp;
-		double x, y, z, qx, qy, qz, qw;
-		sscanf (line.c_str(), "%d %f %lf %lf %lf %lf %lf %lf %lf", &iid, &timestamp,
-			&x, &y, &z,
-			&qx, &qy, &qz, &qw);
-		cItem.position << x, y, z;
-		cItem.orientation.x() = qx;
-		cItem.orientation.y() = qy;
-		cItem.orientation.z() = qz;
-		cItem.orientation.w() = qw;
-		cItem.imagePath = datasetDir + '/' + std::to_string(iid) + ".png";
-		if (access(cItem.imagePath.c_str(), R_OK) != 0)
-			throw std::runtime_error(string("No such file: ")+cItem.imagePath);
-
-		dataset.push_back(cItem);
-	}
-
-	mask = cv::imread(datasetDir+"/mask.png", cv::IMREAD_GRAYSCALE);
 	cMap = new VMap(mask, FeatureDetectorT::ORB, DescriptorMatcherT::BruteForce);
 	onlyCamera = cMap->addCameraParameter(cparams);
 
-	viewer = new Viewer(cMap, &dataset);
-
-	inputfd.close();
+	viewer = new Viewer(dataset);
 
 	cerr << "Expected #of frames: " << dataset.size() << endl;
 }
@@ -99,17 +65,26 @@ void MapBuilder::buildKeyFrames (int startInN, int maxNumOfFrames)
 #pragma omp parallel
 	for (uint i=startInN, p=0; i<startInN + maxNumOfFrames; i++, p++) {
 		cerr << "Initialize " << p << '/' << maxNumOfFrames << endl;
-		createKeyFrame(dataset[i], i);
+		createKeyFrame (const_cast<CustomDataItem&>(dataset.at(i)), i);
 	}
 }
 
 
-KeyFrame* MapBuilder::createKeyFrame (const DataItem &di, kfid setKfId)
+KeyFrame* MapBuilder::createKeyFrame (CustomDataItem &di, kfid setKfId)
 {
 	KeyFrame *mNewFrame;
 	kfid kfid;
-	cv::Mat image = cv::imread(di.imagePath, cv::IMREAD_GRAYSCALE);
-	kfid = cMap->createKeyFrame(image, di.position, di.orientation, onlyCamera, &mNewFrame, setKfId);
+
+	cv::Mat itemImage;
+	itemImage = di.getImage();
+
+	kfid = cMap->createKeyFrame(
+		itemImage,
+		di.getPosition(),
+		di.getOrientation(),
+		onlyCamera,
+		&mNewFrame,
+		setKfId);
 	return mNewFrame;
 }
 
@@ -123,16 +98,16 @@ bool MapBuilder::run2 (int startKeyfr, int maxNumOfKeyframes)
 	vector<kfid> kfList = cMap->getKeyFrameList();
 
 	// Initialize map
-	viewer->update(kfList[0]);
+	viewer->update(kfList[0], kfList[0]);
 	cMap->estimateStructure(kfList[0], kfList[1]);
 	cout << "Map initialized\n";
-	viewer->update(kfList[1]);
+	viewer->update(kfList[1], kfList[1]);
 
 	for (int i=2; i<kfList.size(); i++) {
 		kfid fromKfId = kfList[i-1],
 			toKfId = kfList[i];
 		cMap->estimateAndTrack(fromKfId, toKfId);
-		viewer->update(toKfId);
+		viewer->update(toKfId, toKfId);
 		cout << i << '/' << kfList.size() << endl;
 	}
 

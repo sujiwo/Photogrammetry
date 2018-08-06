@@ -17,10 +17,19 @@
 class CustomDataset;
 class CustomDataItem : public GenericDataItem
 {
+public:
 	friend class CustomDataset;
-	CustomDataItem() {}
 
-	cv::Mat getImage() const;
+	inline CustomDataItem():
+		id(0),
+		imagePath(""),
+		position(Eigen::Vector3d::Zero()),
+		orientation(Eigen::Quaterniond::Identity())
+	{}
+
+	inline ~CustomDataItem() {}
+
+	cv::Mat getImage();
 
 	Eigen::Vector3d getPosition() const
 	{ return position; }
@@ -53,7 +62,7 @@ public:
 	cv::Mat getMask()
 	{ return mask; }
 
-	const GenericDataItem& at(const int i);
+	CustomDataItem& at(const int i) const;
 
 protected:
 	const std::string rootPath;

@@ -23,7 +23,8 @@ public:
 	Viewer (const GenericDataset &genset);
 	~Viewer ();
 
-	void update (const uint64_t &dataItemId);
+	// Frame and dataItem may be decoupled
+	void update (int dataItemId, kfid frameId);
 
 	void setMap (VMap *m);
 

@@ -69,6 +69,7 @@ add_library(
 		src/OxfordDataset.cpp
 		src/utilities.cpp	
 		src/GenericDataset.cpp
+		src/CustomDataset.cpp
 )
 
 add_executable (map_test

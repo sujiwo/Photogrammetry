@@ -49,3 +49,7 @@ GenericDataset::dump(const std::string &filename)
 	if (fdr.is_open())
 		fdr.close();
 }
+
+
+GenericDataItem::~GenericDataItem()
+{}

@@ -9,6 +9,7 @@
 #include "Viewer.h"
 #include "VMap.h"
 #include "utilities.h"
+#include "KeyFrame.h"
 
 
 using namespace std;
@@ -49,15 +50,14 @@ collectAllKeypoints (const KeyFrame *kf, const vector<kpid> &allKpIds)
 
 
 void
-Viewer::update(const kfid &frame)
+Viewer::update (int dataItemId, kfid frameId)
 {
 	assert (cMap != NULL);
-
-	KeyFrame *kf = cMap->keyframe(frame);
-	cv::Mat imagebuf = cv::imread(dataset->at(frame).imagePath);
+	KeyFrame *kf = cMap->keyframe(frameId);
+	cv::Mat imagebuf = dataset.at(dataItemId).getImage();
 
 	// Draw visible map points
-	const map<mpid,kpid> visibleMp = cMap->allMapPointsAtKeyFrame(frame);
+	const map<mpid,kpid> visibleMp = cMap->allMapPointsAtKeyFrame(frameId);
 	if (visibleMp.size() != 0) {
 		vector<kpid> allMpKpIds = allValues(visibleMp);
 		auto allKeypoints = collectAllKeypoints(kf, allMpKpIds);
